@@ -15,7 +15,7 @@ use crate::menu::MenuPlugin;
 use crate::player::PlayerPlugin;
 use crate::display::mob::MobDisplayPlugin;
 
-use bevy_inspector_egui::quick::WorldInspectorPlugin;
+// use bevy_inspector_egui::quick::WorldInspectorPlugin;
 
 // use bevy::app::App;
 use bevy::{
@@ -73,7 +73,7 @@ impl Plugin for GamePlugin {
             InternalAudioPlugin,
             PlayerPlugin,
             MobDisplayPlugin,
-            WorldInspectorPlugin::new()
+            // WorldInspectorPlugin::new()
         ))
         .insert_resource(Msaa::Off)
         .add_systems(Startup, (
