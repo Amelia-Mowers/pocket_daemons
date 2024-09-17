@@ -7,6 +7,8 @@ use crate::GameState;
 
 mod game_control;
 
+use crate::graph::grid_transform::*;
+
 pub const FOLLOW_EPSILON: f32 = 5.;
 
 pub struct ActionsPlugin;
@@ -24,36 +26,23 @@ impl Plugin for ActionsPlugin {
 
 #[derive(Default, Resource)]
 pub struct Actions {
-    pub player_movement: Option<Vec2>,
+    pub player_movement: Option<GridTransform>,
 }
 
 pub fn set_movement_actions(
     mut actions: ResMut<Actions>,
     keyboard_input: Res<ButtonInput<KeyCode>>,
-    touch_input: Res<Touches>,
     player: Query<&Transform, With<Player>>,
-    camera: Query<(&Camera, &GlobalTransform), With<Camera2d>>,
 ) {
-    let mut player_movement = Vec2::new(
-        get_movement(GameControl::Right, &keyboard_input)
-            - get_movement(GameControl::Left, &keyboard_input),
-        get_movement(GameControl::Up, &keyboard_input)
-            - get_movement(GameControl::Down, &keyboard_input),
-    );
 
-    if let Some(touch_position) = touch_input.first_pressed_position() {
-        let (camera, camera_transform) = camera.single();
-        if let Some(touch_position) = camera.viewport_to_world_2d(camera_transform, touch_position)
-        {
-            let diff = touch_position - player.single().translation.xy();
-            if diff.length() > FOLLOW_EPSILON {
-                player_movement = diff.normalize();
-            }
-        }
-    }
+    let mut player_movement = ZERO;
+    if GameControl::Up.pressed(&keyboard_input) { player_movement = NORTH }
+    if GameControl::Down.pressed(&keyboard_input) { player_movement = SOUTH }
+    if GameControl::Left.pressed(&keyboard_input) { player_movement = WEST }
+    if GameControl::Right.pressed(&keyboard_input) { player_movement = EAST }
 
-    if player_movement != Vec2::ZERO {
-        actions.player_movement = Some(player_movement.normalize());
+    if player_movement != ZERO {
+        actions.player_movement = Some(player_movement);
     } else {
         actions.player_movement = None;
     }
