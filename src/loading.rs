@@ -31,9 +31,18 @@ pub struct AudioAssets {
 #[derive(AssetCollection, Resource)]
 pub struct TextureAssets {
     #[asset(path = "textures/bevy.png")]
+    
     pub bevy: Handle<Image>,
+    #[asset(texture_atlas_layout(
+        tile_size_x = 16, 
+        tile_size_y = 16, 
+        columns = 4, 
+        rows = 4
+    ))]
+    pub player_layout: Handle<TextureAtlasLayout>,
     #[asset(path = "sprites/player.png")]
     pub player: Handle<Image>,
+
     #[asset(path = "textures/github.png")]
     pub github: Handle<Image>,
 }

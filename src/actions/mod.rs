@@ -32,16 +32,20 @@ pub struct Actions {
 pub fn set_movement_actions(
     mut actions: ResMut<Actions>,
     keyboard_input: Res<ButtonInput<KeyCode>>,
-    player: Query<&Transform, With<Player>>,
+    // player: Query<&Transform, With<Player>>,
 ) {
 
-    let mut player_movement = ZERO;
-    if GameControl::Up.pressed(&keyboard_input) { player_movement = NORTH }
-    if GameControl::Down.pressed(&keyboard_input) { player_movement = SOUTH }
-    if GameControl::Left.pressed(&keyboard_input) { player_movement = WEST }
-    if GameControl::Right.pressed(&keyboard_input) { player_movement = EAST }
+    let mut player_movement = GridTransform::ZERO;
+    if GameControl::Up.pressed(&keyboard_input) { 
+        player_movement = GridTransform::NORTH }
+    if GameControl::Down.pressed(&keyboard_input) { 
+        player_movement = GridTransform::SOUTH }
+    if GameControl::Left.pressed(&keyboard_input) { 
+        player_movement = GridTransform::WEST }
+    if GameControl::Right.pressed(&keyboard_input) { 
+        player_movement = GridTransform::EAST }
 
-    if player_movement != ZERO {
+    if player_movement != GridTransform::ZERO {
         actions.player_movement = Some(player_movement);
     } else {
         actions.player_movement = None;

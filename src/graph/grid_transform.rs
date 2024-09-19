@@ -16,10 +16,23 @@ impl GridTransform {
 
     pub fn neighbors(&self) -> Vec<Self> {
         let mut neighbors = Vec::new();
-        for dir in CARDINALS {
+        for dir in Self::CARDINALS {
             neighbors.push(*self + dir);
         } 
         neighbors
+    }
+    
+    pub fn cardinal_index(&self) -> usize {
+        // Logical statements that evaluate to 1 if true, 0 if false
+        let is_north = ((self.x == 0) && (self.y == 1)) as usize;
+        let is_east = ((self.x == 1) && (self.y == 0)) as usize;
+        let is_south = ((self.x == 0) && (self.y == -1)) as usize;
+        let is_west = ((self.x == -1) && (self.y == 0)) as usize;
+
+        // Multiply each boolean by its index and sum them up
+        let index = is_north * 0 + is_east * 1 + is_south * 2 + is_west * 3;
+
+        index
     }
     
     // pub fn neighbors_ordinals(&self, connections: Vec<Connection>) -> Vec<Self> {
@@ -41,36 +54,36 @@ impl GridTransform {
     //     neighbors
     // }
 
+    pub const ZERO: GridTransform = GridTransform { x: 0, y: 0 };
+
+    pub const NORTH: GridTransform = GridTransform { x: 0, y: 1 };
+    pub const NORTH_EAST: GridTransform = GridTransform { x: 1, y: 1 };
+    pub const EAST: GridTransform = GridTransform { x: 1, y: 0 };
+    pub const SOUTH_EAST: GridTransform = GridTransform { x: 1, y: -1 };
+    pub const SOUTH: GridTransform = GridTransform { x: 0, y: -1 };
+    pub const SOUTH_WEST: GridTransform = GridTransform { x: -1, y: -1 };
+    pub const WEST: GridTransform = GridTransform { x: -1, y: 0 };
+    pub const NORTH_WEST: GridTransform = GridTransform { x: -1, y: 1 };
+
+    pub const CARDINALS: [GridTransform; 4] = [
+        Self::NORTH,
+        Self::EAST,
+        Self::SOUTH,
+        Self::WEST,
+    ];
+
+    pub const ORDINALS: [GridTransform; 8] = [
+        Self::NORTH,
+        Self::NORTH_EAST,
+        Self::EAST,
+        Self::SOUTH_EAST,
+        Self::SOUTH,
+        Self::SOUTH_WEST,
+        Self::WEST,
+        Self::NORTH_WEST,
+    ];
+
 }
-
-pub const ZERO: GridTransform = GridTransform { x: 0, y: 0 };
-
-pub const NORTH: GridTransform = GridTransform { x: 0, y: 1 };
-pub const NORTH_EAST: GridTransform = GridTransform { x: 1, y: 1 };
-pub const EAST: GridTransform = GridTransform { x: 1, y: 0 };
-pub const SOUTH_EAST: GridTransform = GridTransform { x: 1, y: -1 };
-pub const SOUTH: GridTransform = GridTransform { x: 0, y: -1 };
-pub const SOUTH_WEST: GridTransform = GridTransform { x: -1, y: -1 };
-pub const WEST: GridTransform = GridTransform { x: -1, y: 0 };
-pub const NORTH_WEST: GridTransform = GridTransform { x: -1, y: 1 };
-
-pub const CARDINALS: [GridTransform; 4] = [
-    NORTH,
-    EAST,
-    SOUTH,
-    WEST,
-];
-
-pub const ORDINALS: [GridTransform; 8] = [
-    NORTH,
-    NORTH_EAST,
-    EAST,
-    SOUTH_EAST,
-    SOUTH,
-    SOUTH_WEST,
-    WEST,
-    NORTH_WEST,
-];
 
 impl Add for GridTransform {
     type Output = Self;
