@@ -40,6 +40,8 @@ fn update_mob_transform(
                 * (time.delta().as_secs_f32() / PLAYER_SPEED);
 
             (*transform).translation = current + mod_diff;
+        } else {
+            (*transform).translation = goal.translation;
         }
     }
 }

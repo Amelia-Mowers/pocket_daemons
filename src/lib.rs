@@ -7,12 +7,14 @@ mod menu;
 mod player;
 mod graph;
 mod display;
+mod map;
 
 use crate::actions::ActionsPlugin;
 use crate::audio::InternalAudioPlugin;
 use crate::loading::LoadingPlugin;
 use crate::menu::MenuPlugin;
 use crate::player::PlayerPlugin;
+use crate::map::MapPlugin;
 use crate::display::mob::MobDisplayPlugin;
 
 // use bevy_inspector_egui::quick::WorldInspectorPlugin;
@@ -73,6 +75,7 @@ impl Plugin for GamePlugin {
             InternalAudioPlugin,
             PlayerPlugin,
             MobDisplayPlugin,
+            MapPlugin,
             // WorldInspectorPlugin::new()
         ))
         .insert_resource(Msaa::Off)

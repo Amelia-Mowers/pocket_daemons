@@ -54,7 +54,7 @@ fn spawn_player(mut commands: Commands, textures: Res<TextureAssets>) {
 #[derive(Resource)]
 pub struct MovementCooldown(Timer);
 
-pub const PLAYER_SPEED: f32 = 0.3;
+pub const PLAYER_SPEED: f32 = 0.4;
 
 impl MovementCooldown {
     pub fn new() -> Self {
