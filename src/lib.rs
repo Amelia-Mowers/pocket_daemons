@@ -14,6 +14,7 @@ use crate::audio::InternalAudioPlugin;
 use crate::loading::LoadingPlugin;
 use crate::menu::MenuPlugin;
 use crate::player::PlayerPlugin;
+use crate::player::Player;
 use crate::map::MapPlugin;
 use crate::display::mob::MobDisplayPlugin;
 
@@ -87,6 +88,7 @@ impl Plugin for GamePlugin {
         .add_systems(Update, (
             // rotate, 
             fit_canvas,
+            camera_follow_player.run_if(in_state(GameState::Playing)),
         ));
 
         #[cfg(debug_assertions)]
@@ -211,6 +213,16 @@ fn setup_camera(mut commands: Commands, mut images: ResMut<Assets<Image>>) {
     // the "outer" camera renders whatever is on `HIGH_RES_LAYERS` to the screen.
     // here, the canvas and one of the sample sprites will be rendered by this camera
     commands.spawn((Camera2dBundle::default(), OuterCamera, HIGH_RES_LAYERS));
+}
+
+fn camera_follow_player(
+    p: Query<&Transform, (With<Player>, Without<InGameCamera>)>,
+    mut c: Query<&mut Transform, (With<InGameCamera>, Without<Player>)>,
+) {
+    let mut camera_transform = c.single_mut();
+    let player_transform = p.single();
+
+    *camera_transform = *player_transform;
 }
 
 /// Rotates entities to demonstrate grid snapping.

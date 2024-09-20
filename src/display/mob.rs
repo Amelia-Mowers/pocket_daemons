@@ -21,6 +21,8 @@ impl Plugin for MobDisplayPlugin {
 
 }
 
+const MOVE_CUTOFF: f32 = 0.4;
+
 fn update_mob_transform(
     time: Res<Time>,
     mut query: Query<(&GridTransform, &mut Transform)>,
@@ -29,7 +31,7 @@ fn update_mob_transform(
         let current = (*transform).translation;
         let goal: Transform = (*position).into();
 
-        let moving = goal.translation.distance(current) > 0.7;
+        let moving = goal.translation.distance(current) > MOVE_CUTOFF;
 
         if moving {
             let diff = goal.translation - current;
@@ -67,7 +69,7 @@ fn update_mob_animation(
     ) in query.iter_mut() {
         let current = (*transform).translation;
         let goal: Transform = (*position).into();
-        let moving = goal.translation.distance(current) > 0.7;
+        let moving = goal.translation.distance(current) > MOVE_CUTOFF;
 
         let base = direction.cardinal_index() * 4;
 
