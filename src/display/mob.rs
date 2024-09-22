@@ -21,7 +21,7 @@ impl Plugin for MobDisplayPlugin {
 
 }
 
-const MOVE_CUTOFF: f32 = 0.4;
+const MOVE_CUTOFF: f32 = 0.8;
 
 fn update_mob_transform(
     time: Res<Time>,
@@ -31,20 +31,16 @@ fn update_mob_transform(
         let current = (*transform).translation;
         let goal: Transform = (*position).into();
 
-        let moving = goal.translation.distance(current) > MOVE_CUTOFF;
+        let z_level = current.z;
 
-        if moving {
-            let diff = goal.translation - current;
+        (*transform).translation = 
+            current.move_towards(
+                goal.translation, 
+                (SCALE_FACTOR * (time.delta().as_secs_f32() / PLAYER_SPEED))
+            );
 
-            let mod_diff = 
-                diff.normalize_or_zero() 
-                * SCALE_FACTOR 
-                * (time.delta().as_secs_f32() / PLAYER_SPEED);
-
-            (*transform).translation = current + mod_diff;
-        } else {
-            (*transform).translation = goal.translation;
-        }
+        
+        (*transform).translation.z = z_level;
     }
 }
 
@@ -67,8 +63,9 @@ fn update_mob_animation(
         mut timer,
         mut atlas,
     ) in query.iter_mut() {
-        let current = (*transform).translation;
+        let current = (*transform).translation.with_z(0.0);
         let goal: Transform = (*position).into();
+
         let moving = goal.translation.distance(current) > MOVE_CUTOFF;
 
         let base = direction.cardinal_index() * 4;

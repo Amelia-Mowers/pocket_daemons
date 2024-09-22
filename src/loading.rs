@@ -3,6 +3,9 @@ use bevy::prelude::*;
 use bevy_asset_loader::prelude::*;
 use bevy_kira_audio::AudioSource;
 
+use bevy_ecs_tiled::prelude::*;
+use bevy_ecs_tilemap::prelude::*;
+
 pub struct LoadingPlugin;
 
 /// This plugin loads all assets using [`AssetLoader`] from a third party bevy plugin
@@ -14,8 +17,9 @@ impl Plugin for LoadingPlugin {
             LoadingState::new(GameState::Loading)
                 .continue_to_state(GameState::Menu)
                 .load_collection::<AudioAssets>()
-                .load_collection::<TextureAssets>(),
-        );
+                .load_collection::<TextureAssets>()
+                .load_collection::<MapAssets>()
+        ); 
     }
 }
 
@@ -26,6 +30,12 @@ impl Plugin for LoadingPlugin {
 pub struct AudioAssets {
     #[asset(path = "audio/flying.ogg")]
     pub flying: Handle<AudioSource>,
+}
+
+#[derive(AssetCollection, Resource)]
+pub struct MapAssets{
+    #[asset(path = "sprites/rules_test.tmx")]
+    pub map: Handle<TiledMap>,
 }
 
 #[derive(AssetCollection, Resource)]
