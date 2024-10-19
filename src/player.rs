@@ -1,7 +1,9 @@
 use crate::actions::Actions;
 use crate::loading::TextureAssets;
+// use crate::loading::MapAssets;
 use crate::GameState;
 use bevy::prelude::*;
+use bevy::sprite::*;
 
 use crate::graph::grid_transform::*;
 
@@ -40,6 +42,10 @@ fn spawn_player(mut commands: Commands, textures: Res<TextureAssets>) {
             SpriteBundle {
                 texture: textures.player.clone(),
                 transform: Transform::from_translation(Vec3::new(0., 0., 2.)),
+                sprite: Sprite {
+                    anchor: Anchor::BottomLeft,
+                    ..Default::default()
+                },
                 ..Default::default()
             },
             TextureAtlas::from(textures.player_layout.clone()),
@@ -77,6 +83,7 @@ fn tick_movement_cooldown(
 
 fn move_player(
     actions: Res<Actions>,
+    // maps: Res<MapAssets>,
     mut move_cooldown: ResMut<MovementCooldown>,
     mut player_query: Query<(&mut GridTransform, &mut GridDirection), With<Player>>,
 ) {

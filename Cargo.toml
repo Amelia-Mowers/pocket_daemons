@@ -1,13 +1,14 @@
 [package]
-name = "bevy_game" # ToDo
+name = "pocket_daemons" # ToDo
 version = "0.1.0"
 publish = false
-authors = ["Niklas Eicker <git@nikl.me>"] # ToDo: you are the author ;)
+authors = ["Amelia Mowers"] # ToDo: you are the author ;)
 edition = "2021"
 exclude = ["dist", "build", "assets", "credits"]
 
 [workspace]
 members = ["mobile"]
+resolver = "2"
 
 [profile.dev.package."*"]
 opt-level = 3
@@ -75,9 +76,18 @@ winit = { version = "0.30", default-features = false }
 image = { version = "0.25", default-features = false }
 ## This greatly improves WGPU's performance due to its heavy use of trace! calls
 log = { version = "0.4", features = ["max_level_debug", "release_max_level_warn"] }
-bevy_ecs_tiled = "0.3.10"
-bevy_ecs_tilemap = "0.14.0"
+bevy_ecs_tilemap = { version = "0.14.0", features = ["atlas"] }
+bevy_ecs_tiled = { git = "https://github.com/Amelia-Mowers/bevy_ecs_tiled.git", features = ["atlas"]}
+thiserror = "1.0.64"
+# tiled = { version = "0.12.1", default-features = false, features = ["wasm"] }
+# tiled = { git = "https://github.com/Amelia-Mowers/rs-tiled.git" }
+serde_json = "1.0.128"
+ldtk_rust = "0.6.0"
+serde = "1.0.210"
+ron = "0.8.1"
 # bevy-inspector-egui = "0.25.2"
 
 [build-dependencies]
 embed-resource = "1"
+
+

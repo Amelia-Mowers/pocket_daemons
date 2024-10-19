@@ -8,6 +8,7 @@ mod player;
 mod graph;
 mod display;
 mod map;
+mod helpers;
 
 use crate::actions::ActionsPlugin;
 use crate::audio::InternalAudioPlugin;

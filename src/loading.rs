@@ -3,7 +3,7 @@ use bevy::prelude::*;
 use bevy_asset_loader::prelude::*;
 use bevy_kira_audio::AudioSource;
 
-use bevy_ecs_tiled::prelude::*;
+// use bevy_ecs_tiled::prelude::*;
 use bevy_ecs_tilemap::prelude::*;
 
 pub struct LoadingPlugin;
@@ -13,13 +13,16 @@ pub struct LoadingPlugin;
 /// If interested, take a look at <https://bevy-cheatbook.github.io/features/assets.html>
 impl Plugin for LoadingPlugin {
     fn build(&self, app: &mut App) {
-        app.add_loading_state(
+        app
+        // .add_plugins(TilemapPlugin)
+        // .add_plugins(TiledMapPlugin)
+        .add_loading_state(
             LoadingState::new(GameState::Loading)
                 .continue_to_state(GameState::Menu)
                 .load_collection::<AudioAssets>()
                 .load_collection::<TextureAssets>()
-                .load_collection::<MapAssets>()
-        ); 
+                // .load_collection::<MapAssets>()
+        );
     }
 }
 
@@ -32,17 +35,18 @@ pub struct AudioAssets {
     pub flying: Handle<AudioSource>,
 }
 
-#[derive(AssetCollection, Resource)]
-pub struct MapAssets{
-    #[asset(path = "sprites/rules_test.tmx")]
-    pub map: Handle<TiledMap>,
-}
+// #[derive(AssetCollection, Resource)]
+// pub struct MapAssets{
+//     #[asset(path = "sprites/rules_test.tmx")]
+//     pub map: Handle<TiledMap>,
+// }
 
 #[derive(AssetCollection, Resource)]
 pub struct TextureAssets {
     #[asset(path = "textures/bevy.png")]
     
     pub bevy: Handle<Image>,
+    
     #[asset(texture_atlas_layout(
         tile_size_x = 16, 
         tile_size_y = 16, 
@@ -50,10 +54,11 @@ pub struct TextureAssets {
         rows = 4
     ))]
     pub player_layout: Handle<TextureAtlasLayout>,
+
     #[asset(path = "sprites/player.png")]
     pub player: Handle<Image>,
 
-    #[asset(path = "sprites/map.png")]
+    #[asset(path = "sprites/rules_test.png")]
     pub map: Handle<Image>,
 
     #[asset(path = "textures/github.png")]

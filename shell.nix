@@ -14,6 +14,7 @@ mkShell rec {
     xorg.libXrandr # To use the x11 feature
     libxkbcommon
     wayland # To use the wayland feature
+    wabt
   ];
   LD_LIBRARY_PATH = lib.makeLibraryPath buildInputs;
 

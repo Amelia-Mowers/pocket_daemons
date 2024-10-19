@@ -9,7 +9,7 @@ name = "mobile"
 crate-type = ["staticlib", "cdylib"]
 
 [dependencies]
-bevy_game = { path = ".." } # ToDo
+pocket_daemons = { path = ".." } # ToDo
 bevy = { version = "0.14", default-features = false }
 
 # As long as Kira doesn't expose a feature for this, we need to enable it
@@ -25,7 +25,7 @@ bevy = { version = "0.14", default-features = false, features = [
 ] }
 
 [package.metadata.android]
-package = "me.nikl.bevygame"  # ToDo
+package = "me.miam.pocketdaemons"  # ToDo
 apk_name = "BevyGame"  # ToDo same as GAME_OSX_APP_NAME in release workflow
 assets = "../assets"
 strip = "strip"
@@ -37,4 +37,4 @@ target_sdk_version = 33
 
 [package.metadata.android.application]
 icon = "@mipmap/icon"
-label = "Bevy Game" # ToDo
+label = "PocketDaemons" # ToDo
