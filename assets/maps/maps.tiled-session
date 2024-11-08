@@ -1,0 +1,21 @@
+{
+    "activeFile": "",
+    "expandedProjectPaths": [
+    ],
+    "fileStates": {
+        "rules_test.tmx": {
+            "scale": 1.3529713114754098,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 244.27716773949263,
+                "y": 164.45285876561908
+            }
+        }
+    },
+    "openFiles": [
+    ],
+    "project": "maps.tiled-project",
+    "property.type": "terrain",
+    "recentFiles": [
+    ]
+}

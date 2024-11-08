@@ -58,9 +58,6 @@ pub struct TextureAssets {
     #[asset(path = "sprites/player.png")]
     pub player: Handle<Image>,
 
-    #[asset(path = "sprites/rules_test.png")]
-    pub map: Handle<Image>,
-
     #[asset(path = "textures/github.png")]
     pub github: Handle<Image>,
 }

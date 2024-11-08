@@ -1,9 +1,10 @@
 use bevy::prelude::*;
 use std::ops::{Add, AddAssign, Sub, Neg};
+use bevy_ecs_tilemap::prelude::*;
 
 // use crate::graph::connection::Connection;
 
-#[derive(Component, Debug, PartialEq, Eq, Hash, Default, Clone, Copy)]
+#[derive(Component, Debug, PartialEq, Eq, Hash, Default, Clone, Copy, Reflect)]
 pub struct GridTransform {
     pub x: i16,
     pub y: i16,
@@ -83,6 +84,19 @@ impl GridTransform {
         Self::NORTH_WEST,
     ];
 
+}
+
+impl GridTransform {
+    pub fn to_tile_pos(&self) -> Option<TilePos> {
+        if self.x >= 0 && self.y >= 0 {
+            Some(TilePos {
+                x: self.x as u32,
+                y: self.y as u32,
+            })
+        } else {
+            None
+        }
+    }
 }
 
 impl Add for GridTransform {

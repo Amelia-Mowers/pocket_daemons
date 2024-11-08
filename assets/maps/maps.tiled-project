@@ -1,0 +1,46 @@
+{
+    "automappingRulesFile": "",
+    "commands": [
+    ],
+    "compatibilityVersion": 1100,
+    "extensionsPath": "extensions",
+    "folders": [
+        "."
+    ],
+    "properties": [
+    ],
+    "propertyTypes": [
+        {
+            "color": "#ffa0a0a4",
+            "drawFill": true,
+            "id": 1,
+            "members": [
+                {
+                    "name": "terrain",
+                    "propertyType": "Terrain",
+                    "type": "string",
+                    "value": "Dirt"
+                }
+            ],
+            "name": "TileBundle",
+            "type": "class",
+            "useAs": [
+                "property",
+                "tile",
+                "project"
+            ]
+        },
+        {
+            "id": 2,
+            "name": "Terrain",
+            "storageType": "string",
+            "type": "enum",
+            "values": [
+                "Dirt",
+                "Grass",
+                "Tree"
+            ],
+            "valuesAsFlags": false
+        }
+    ]
+}

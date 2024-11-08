@@ -1,6 +1,5 @@
 #![allow(clippy::type_complexity)]
 
-mod actions;
 mod audio;
 mod loading;
 mod menu;
@@ -9,8 +8,9 @@ mod graph;
 mod display;
 mod map;
 mod helpers;
+mod mob;
+mod control;
 
-use crate::actions::ActionsPlugin;
 use crate::audio::InternalAudioPlugin;
 use crate::loading::LoadingPlugin;
 use crate::menu::MenuPlugin;
@@ -18,8 +18,10 @@ use crate::player::PlayerPlugin;
 use crate::player::Player;
 use crate::map::MapPlugin;
 use crate::display::mob::MobDisplayPlugin;
+use crate::control::ControlPlugin;
+use crate::mob::MobPlugin;
 
-// use bevy_inspector_egui::quick::WorldInspectorPlugin;
+use bevy_inspector_egui::quick::WorldInspectorPlugin;
 
 // use bevy::app::App;
 use bevy::{
@@ -73,21 +75,19 @@ impl Plugin for GamePlugin {
             .add_plugins((
             LoadingPlugin,
             MenuPlugin,
-            ActionsPlugin,
             InternalAudioPlugin,
             PlayerPlugin,
+            MobPlugin,
             MobDisplayPlugin,
             MapPlugin,
-            // WorldInspectorPlugin::new()
+            ControlPlugin,
+            WorldInspectorPlugin::new()
         ))
         .insert_resource(Msaa::Off)
         .add_systems(Startup, (
             setup_camera, 
-            // setup_sprite, 
-            // setup_mesh,
         ))
         .add_systems(Update, (
-            // rotate, 
             fit_canvas,
             camera_follow_player.run_if(in_state(GameState::Playing)),
         ));

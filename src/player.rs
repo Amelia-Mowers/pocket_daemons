@@ -1,102 +1,65 @@
-use crate::actions::Actions;
 use crate::loading::TextureAssets;
-// use crate::loading::MapAssets;
 use crate::GameState;
 use bevy::prelude::*;
 use bevy::sprite::*;
 
 use crate::graph::grid_transform::*;
+use crate::mob::*;
+use crate::control::*;
 
 pub struct PlayerPlugin;
 
 #[derive(Component)]
 pub struct Player;
 
-#[derive(Component, Deref, DerefMut)]
-pub struct GridDirection(GridTransform);
-
-#[derive(Component, Deref, DerefMut)]
-pub struct AnimationIndex(usize);
-
-#[derive(Component, Deref, DerefMut)]
-pub struct AnimationTimer(Timer);
-
-/// This plugin handles player related stuff like movement
-/// Player logic is only active during the State `GameState::Playing`
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(OnEnter(GameState::Playing), spawn_player)
-            .add_systems(Update, 
-                move_player.run_if(in_state(GameState::Playing)),
-            )
-            .add_systems(Update, 
-                tick_movement_cooldown
-            )
-            .init_resource::<MovementCooldown>();
+        app
+            .add_systems(OnEnter(GameState::Playing), spawn_player)
+            .add_systems(Update, (
+                player_move_control.after(map_inputs_to_control_events),
+            ).run_if(in_state(GameState::Playing)));
     }
 }
 
 fn spawn_player(mut commands: Commands, textures: Res<TextureAssets>) {
-    commands
-        .spawn((
-            SpriteBundle {
-                texture: textures.player.clone(),
-                transform: Transform::from_translation(Vec3::new(0., 0., 2.)),
-                sprite: Sprite {
-                    anchor: Anchor::BottomLeft,
-                    ..Default::default()
-                },
-                ..Default::default()
-            },
-            TextureAtlas::from(textures.player_layout.clone()),
-            Player,
-            GridTransform::ZERO,
-            GridDirection(GridTransform::SOUTH),
-            AnimationIndex(0),
-            AnimationTimer(Timer::from_seconds(0.1, TimerMode::Repeating)),
-        ));
+    commands.spawn((
+        Player,
+        MobBundle {
+            texture: textures.player.clone(),
+            texture_atlas: TextureAtlas::from(textures.player_layout.clone()),
+            ..Default::default()
+        },
+    ));
 }
 
-#[derive(Resource)]
-pub struct MovementCooldown(Timer);
-
-pub const PLAYER_SPEED: f32 = 0.4;
-
-impl MovementCooldown {
-    pub fn new() -> Self {
-        Self(Timer::from_seconds(PLAYER_SPEED, TimerMode::Once))
-    }
-}
-
-impl Default for MovementCooldown {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
-fn tick_movement_cooldown(
-    time: Res<Time>,
-    mut timer: ResMut<MovementCooldown>
+pub fn player_move_control(
+    mut control_events: EventReader<GameControlEvent>,
+    mut query: Query<
+        &mut MoveTo,
+        With<Player>
+    >,
 ) {
-    timer.0.tick(time.delta());
-}
+    let control = match control_events.read()
+    .filter(|e| e.pressed())
+    .last() {
+        Some(e) => Some(e.control),
+        None => None,
+    };
 
-fn move_player(
-    actions: Res<Actions>,
-    // maps: Res<MapAssets>,
-    mut move_cooldown: ResMut<MovementCooldown>,
-    mut player_query: Query<(&mut GridTransform, &mut GridDirection), With<Player>>,
-) {
-    match actions.player_movement {
-        None => return,
-        Some(movement) => {
-            if move_cooldown.0.finished() {
-                for (mut player_transform, mut direction) in &mut player_query {
-                    *player_transform += movement;
-                    (*direction).0 = movement;
-                }
-                move_cooldown.0.reset();
+    let new_move_to = match control {
+        Some(c) => {
+            match c {
+              GameControl::Up => Some(GridTransform::NORTH),
+              GameControl::Down => Some(GridTransform::SOUTH),
+              GameControl::Left => Some(GridTransform::WEST),
+              GameControl::Right => Some(GridTransform::EAST),
             }
-        }
+        },
+        None => None,
+    };
+    
+    for mut move_to in &mut query {
+        *move_to = MoveTo(new_move_to); 
     }
 }

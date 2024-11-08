@@ -77,7 +77,8 @@ image = { version = "0.25", default-features = false }
 ## This greatly improves WGPU's performance due to its heavy use of trace! calls
 log = { version = "0.4", features = ["max_level_debug", "release_max_level_warn"] }
 bevy_ecs_tilemap = { version = "0.14.0", features = ["atlas"] }
-bevy_ecs_tiled = { git = "https://github.com/Amelia-Mowers/bevy_ecs_tiled.git", features = ["atlas"]}
+# bevy_ecs_tiled = { version = "0.3", features = ["atlas", "wasm"] }
+bevy_ecs_tiled = { git = "https://github.com/Amelia-Mowers/bevy_ecs_tiled.git", features = ["atlas", "user_properties"]}
 thiserror = "1.0.64"
 # tiled = { version = "0.12.1", default-features = false, features = ["wasm"] }
 # tiled = { git = "https://github.com/Amelia-Mowers/rs-tiled.git" }
@@ -85,6 +86,7 @@ serde_json = "1.0.128"
 ldtk_rust = "0.6.0"
 serde = "1.0.210"
 ron = "0.8.1"
+bevy-inspector-egui = { version = "0.25.2", default-features = false, features = ["bevy_pbr", "bevy_render", "egui_open_url"] }
 # bevy-inspector-egui = "0.25.2"
 
 [build-dependencies]
