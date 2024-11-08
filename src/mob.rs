@@ -1,15 +1,12 @@
-use crate::loading::TextureAssets;
 use crate::GameState;
 use bevy::prelude::*;
 use bevy::sprite::*;
-use bevy::ecs::query::*;
 
 use crate::graph::grid_transform::*;
 use crate::player::*;
 
 use crate::map::*;
 use bevy_ecs_tilemap::prelude::*;
-use bevy_ecs_tiled::prelude::*;
 
 #[derive(Component, Default)]
 pub struct Mob;

@@ -1,7 +1,6 @@
 use crate::loading::TextureAssets;
 use crate::GameState;
 use bevy::prelude::*;
-use bevy::sprite::*;
 
 use crate::graph::grid_transform::*;
 use crate::mob::*;

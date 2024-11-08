@@ -7,14 +7,6 @@ use bevy::prelude::{
     Res,
 };
 
-use bevy::input::keyboard::*;
-use bevy::input::ButtonState;
-
-use crate::player::Player;
-use crate::GameState;
-
-use crate::graph::grid_transform::*;
-
 pub struct ControlPlugin;
 
 impl Plugin for ControlPlugin {
@@ -50,8 +42,8 @@ pub enum GameControl {
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum ControlStatus {
     Pressed,
-    JustPressed,
-    JustReleased,
+    // JustPressed,
+    // JustReleased,
 }
 
 #[derive(Event, Debug, PartialEq)]

@@ -1,11 +1,6 @@
-use crate::loading::TextureAssets;
-// use crate::loading::MapAssets;
+use crate::loading::MapAssets;
 use crate::GameState;
-// use crate::helpers::tiled::*;
 use bevy::prelude::*;
-use bevy::sprite::*;
-
-use crate::graph::grid_transform::*;
 
 use bevy_ecs_tilemap::prelude::*;
 use bevy_ecs_tiled::prelude::*;
@@ -21,7 +16,7 @@ impl Plugin for MapPlugin {
         .add_plugins(TiledMapPlugin)
         .register_tiled_custom_tile::<TileBundle>("TileBundle")
         .register_type::<Terrain>()
-        .insert_resource(ClearColor(Color::rgb_u8(24, 48, 48)));
+        .insert_resource(ClearColor(Color::srgb_u8(24, 48, 48)));
     }
 }
 
@@ -58,17 +53,12 @@ struct TileBundle {
     terrain: Terrain,
 }
 
-#[derive(Component)]
-pub struct Map;
-
 fn spawn_map(
     mut commands: Commands, 
-    asset_server: Res<AssetServer>, 
+    maps: Res<MapAssets>, 
 ) {
-    let map_handle: Handle<TiledMap> = asset_server.load("maps/rules_test_emb.tmx");
-
     commands.spawn(TiledMapBundle {
-        tiled_map: map_handle,
+        tiled_map: maps.test.clone(),
         ..Default::default()
     });
 }
@@ -81,9 +71,9 @@ pub struct TerrainMap;
 
 fn mark_map_layer(
     mut commands: Commands, 
-    mut query: Query<(Entity, &Name, &TileStorage), Without<ProcessedMap>>,
+    mut query: Query<(Entity, &Name), (With<TileStorage>, Without<ProcessedMap>)>,
 ) {
-    for (entity, name, storage) in &mut query {
+    for (entity, name) in &mut query {
         commands.entity(entity).insert(ProcessedMap);
         if **name == *"TiledMapTileLayerForTileset(prototype, tiles)" {
             commands.entity(entity).insert(TerrainMap);

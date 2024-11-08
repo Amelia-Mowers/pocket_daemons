@@ -1,8 +1,4 @@
-use crate::display::scale::SCALE_FACTOR;
-use crate::graph::grid_transform::GridTransform;
-
 // use crate::player::PLAYER_SPEED; 
-use crate::player::*; 
 use crate::mob::*; 
 
 use bevy::{
@@ -22,10 +18,7 @@ impl Plugin for MobDisplayPlugin {
 
 }
 
-const MOVE_CUTOFF: f32 = 0.8;
-
 fn update_mob_transform(
-    time: Res<Time>,
     mut query: Query<(
         &GridPosition,
         &LastGridPosition,

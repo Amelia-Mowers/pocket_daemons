@@ -33,7 +33,6 @@ use bevy::{
         },
         view::RenderLayers,
     },
-    sprite::MaterialMesh2dBundle,
     window::WindowResized,
 };
 #[cfg(debug_assertions)]
@@ -112,50 +111,29 @@ struct InGameCamera;
 #[derive(Component)]
 struct OuterCamera;
 
-#[derive(Component)]
-struct Rotate;
+// fn setup_sprite(mut commands: Commands, asset_server: Res<AssetServer>) {
+//     // the sample sprite that will be rendered to the pixel-perfect canvas
+//     commands.spawn((
+//         SpriteBundle {
+//             texture: asset_server.load("pixel/bevy_pixel_dark.png"),
+//             transform: Transform::from_xyz(-40., 20., 2.),
+//             ..default()
+//         },
+//         Rotate,
+//         PIXEL_PERFECT_LAYERS,
+//     ));
 
-fn setup_sprite(mut commands: Commands, asset_server: Res<AssetServer>) {
-    // the sample sprite that will be rendered to the pixel-perfect canvas
-    commands.spawn((
-        SpriteBundle {
-            texture: asset_server.load("pixel/bevy_pixel_dark.png"),
-            transform: Transform::from_xyz(-40., 20., 2.),
-            ..default()
-        },
-        Rotate,
-        PIXEL_PERFECT_LAYERS,
-    ));
-
-    // the sample sprite that will be rendered to the high-res "outer world"
-    commands.spawn((
-        SpriteBundle {
-            texture: asset_server.load("pixel/bevy_pixel_light.png"),
-            transform: Transform::from_xyz(-40., -20., 2.),
-            ..default()
-        },
-        Rotate,
-        HIGH_RES_LAYERS,
-    ));
-}
-
-/// Spawns a capsule mesh on the pixel-perfect layer.
-fn setup_mesh(
-    mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
-) {
-    commands.spawn((
-        MaterialMesh2dBundle {
-            mesh: meshes.add(Capsule2d::default()).into(),
-            transform: Transform::from_xyz(40., 0., 2.).with_scale(Vec3::splat(32.)),
-            material: materials.add(Color::BLACK),
-            ..default()
-        },
-        Rotate,
-        PIXEL_PERFECT_LAYERS,
-    ));
-}
+//     // the sample sprite that will be rendered to the high-res "outer world"
+//     commands.spawn((
+//         SpriteBundle {
+//             texture: asset_server.load("pixel/bevy_pixel_light.png"),
+//             transform: Transform::from_xyz(-40., -20., 2.),
+//             ..default()
+//         },
+//         Rotate,
+//         HIGH_RES_LAYERS,
+//     ));
+// }
 
 fn setup_camera(mut commands: Commands, mut images: ResMut<Assets<Image>>) {
     let canvas_size = Extent3d {
@@ -224,14 +202,6 @@ fn camera_follow_player(
     let player_transform = p.single();
 
     *camera_transform = *player_transform;
-}
-
-/// Rotates entities to demonstrate grid snapping.
-fn rotate(time: Res<Time>, mut transforms: Query<&mut Transform, With<Rotate>>) {
-    for mut transform in &mut transforms {
-        let dt = time.delta_seconds();
-        transform.rotate_z(dt);
-    }
 }
 
 /// Scales camera projection to fit the window (integer multiples only).
