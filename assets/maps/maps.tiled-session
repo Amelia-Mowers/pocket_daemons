@@ -1,21 +1,171 @@
 {
-    "activeFile": "",
+    "Map/SizeTest": {
+        "height": 4300,
+        "width": 2
+    },
+    "activeFile": "tiles.tsx",
+    "automapping.whileDrawing": true,
     "expandedProjectPaths": [
+        "maps",
+        "areas",
+        "."
     ],
     "fileStates": {
-        "rules_test.tmx": {
-            "scale": 1.3529713114754098,
-            "selectedLayer": 0,
+        "": {
+            "scaleInDock": 1
+        },
+        ":/automap-tiles.tsx": {
+            "scaleInDock": 1
+        },
+        "areas/clearing.tmx": {
+            "expandedObjectLayers": [
+                3
+            ],
+            "scale": 3,
+            "selectedLayer": 2,
             "viewCenter": {
-                "x": 244.27716773949263,
-                "y": 164.45285876561908
+                "x": 217.49999999999997,
+                "y": 262.5
             }
+        },
+        "areas/clearing_emb.tmx": {
+            "expandedObjectLayers": [
+                3
+            ],
+            "scale": 3,
+            "selectedLayer": 2,
+            "viewCenter": {
+                "x": 247.83333333333331,
+                "y": 327.8333333333333
+            }
+        },
+        "areas/clearing_emb.tmx#object-tiles": {
+            "scaleInDock": 1
+        },
+        "areas/clearing_emb.tmx#proto-tiles": {
+            "scaleInDock": 1
+        },
+        "areas/clearing_emb.tmx#tiles": {
+            "scaleInDock": 1
+        },
+        "areas/road.tmx": {
+            "expandedObjectLayers": [
+                3
+            ],
+            "scale": 4,
+            "selectedLayer": 2,
+            "viewCenter": {
+                "x": 226.875,
+                "y": 54.875
+            }
+        },
+        "areas/road_emb.tmx": {
+            "scale": 3,
+            "selectedLayer": 2,
+            "viewCenter": {
+                "x": 269.8333333333333,
+                "y": 114.16666666666667
+            }
+        },
+        "areas/road_emb.tmx#object-tiles": {
+            "scaleInDock": 1
+        },
+        "areas/road_emb.tmx#proto-tiles": {
+            "scaleInDock": 1
+        },
+        "areas/road_emb.tmx#tiles": {
+            "scaleInDock": 1
+        },
+        "object-tiles.tsx": {
+            "dynamicWrapping": false,
+            "scaleInDock": 1,
+            "scaleInEditor": 4
+        },
+        "objects.tsx": {
+            "dynamicWrapping": true,
+            "scaleInDock": 1,
+            "scaleInEditor": 5.5
+        },
+        "proto-tiles.tsx": {
+            "scaleInEditor": 4
+        },
+        "rules.tmx": {
+            "scale": 5.5,
+            "selectedLayer": 2,
+            "viewCenter": {
+                "x": 292.8181818181818,
+                "y": 168.63636363636363
+            }
+        },
+        "rules_test.tmx": {
+            "expandedObjectLayers": [
+                7
+            ],
+            "scale": 2,
+            "selectedLayer": 2,
+            "viewCenter": {
+                "x": 120.25,
+                "y": 205.75
+            }
+        },
+        "rules_test_emb.tmx": {
+            "expandedObjectLayers": [
+                7
+            ],
+            "scale": 4,
+            "selectedLayer": 2,
+            "viewCenter": {
+                "x": 164.25,
+                "y": 156.625
+            }
+        },
+        "rules_test_emb.tmx#object-tiles": {
+            "scaleInDock": 1
+        },
+        "rules_test_emb.tmx#objects": {
+            "dynamicWrapping": false,
+            "scaleInDock": 1
+        },
+        "rules_test_emb.tmx#tiles": {
+            "dynamicWrapping": false,
+            "scaleInDock": 1
+        },
+        "tiles.tsx": {
+            "dynamicWrapping": false,
+            "scaleInDock": 1,
+            "scaleInEditor": 1
         }
     },
+    "last.exportedFilePath": "/home/mia/Documents/pocket_daemons/assets/maps/areas",
+    "last.imagePath": "/home/mia/Documents/pocket_daemons/assets/maps",
+    "map.lastUsedExportFilter": "All Files (*)",
+    "map.lastUsedFormat": "tmx",
+    "map.tileHeight": 16,
+    "map.tileWidth": 16,
     "openFiles": [
+        "rules_test.tmx",
+        "tiles.tsx",
+        "object-tiles.tsx",
+        "areas/road.tmx"
     ],
     "project": "maps.tiled-project",
-    "property.type": "terrain",
+    "property.type": "TriggerOnMoveOnto",
     "recentFiles": [
-    ]
+        "rules.tmx",
+        "proto-tiles.tsx",
+        "areas/clearing_emb.tmx",
+        "areas/road_emb.tmx",
+        "rules_test.tmx",
+        "areas/road.tmx",
+        "object-tiles.tsx",
+        "tiles.tsx",
+        "rules_test_emb.tmx",
+        "objects.tsx"
+    ],
+    "tileset.lastUsedFormat": "tsx",
+    "tileset.tileSize": {
+        "height": 16,
+        "width": 16
+    },
+    "tileset.type": 0
 }
