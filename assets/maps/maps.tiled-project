@@ -13,34 +13,209 @@
         {
             "color": "#ffa0a0a4",
             "drawFill": true,
-            "id": 1,
+            "id": 5,
             "members": [
-                {
-                    "name": "terrain",
-                    "propertyType": "Terrain",
-                    "type": "string",
-                    "value": "Dirt"
-                }
             ],
-            "name": "TileBundle",
+            "name": "BlocksWalking",
             "type": "class",
             "useAs": [
                 "property",
+                "map",
+                "layer",
+                "object",
+                "tile",
+                "tileset",
+                "wangcolor",
+                "wangset",
+                "project"
+            ]
+        },
+        {
+            "color": "#ffa0a0a4",
+            "drawFill": true,
+            "id": 9,
+            "members": [
+                {
+                    "name": "To",
+                    "type": "string",
+                    "value": ""
+                }
+            ],
+            "name": "ExitData",
+            "type": "class",
+            "useAs": [
+                "property",
+                "map",
+                "layer",
+                "object",
+                "tile",
+                "tileset",
+                "wangcolor",
+                "wangset",
+                "project"
+            ]
+        },
+        {
+            "color": "#ffa0a0a4",
+            "drawFill": true,
+            "id": 7,
+            "members": [
+            ],
+            "name": "IndexGridPosition",
+            "type": "class",
+            "useAs": [
+                "property",
+                "map",
+                "layer",
+                "object",
+                "tile",
+                "tileset",
+                "wangcolor",
+                "wangset",
+                "project"
+            ]
+        },
+        {
+            "color": "#ffa0a0a4",
+            "drawFill": true,
+            "id": 8,
+            "members": [
+                {
+                    "name": "ExitData",
+                    "propertyType": "ExitData",
+                    "type": "class",
+                    "value": {
+                    }
+                },
+                {
+                    "name": "IndexGridPostion",
+                    "propertyType": "IndexGridPosition",
+                    "type": "class",
+                    "value": {
+                    }
+                },
+                {
+                    "name": "TriggerOnMoveOnto",
+                    "propertyType": "TriggerOnMoveOnto",
+                    "type": "class",
+                    "value": {
+                    }
+                }
+            ],
+            "name": "MapExitBundle",
+            "type": "class",
+            "useAs": [
+                "property",
+                "map",
+                "layer",
+                "object",
+                "tile",
+                "tileset",
+                "wangcolor",
+                "wangset",
+                "project"
+            ]
+        },
+        {
+            "color": "#ffa0a0a4",
+            "drawFill": true,
+            "id": 3,
+            "members": [
+                {
+                    "name": "SpawnData",
+                    "propertyType": "SpawnData",
+                    "type": "class",
+                    "value": {
+                    }
+                }
+            ],
+            "name": "PlayerSpawnBundle",
+            "type": "class",
+            "useAs": [
+                "property",
+                "object",
                 "tile",
                 "project"
             ]
         },
         {
-            "id": 2,
-            "name": "Terrain",
-            "storageType": "string",
-            "type": "enum",
-            "values": [
-                "Dirt",
-                "Grass",
-                "Tree"
+            "color": "#ffa0a0a4",
+            "drawFill": true,
+            "id": 4,
+            "members": [
+                {
+                    "name": "From",
+                    "type": "string",
+                    "value": ""
+                }
             ],
-            "valuesAsFlags": false
+            "name": "SpawnData",
+            "type": "class",
+            "useAs": [
+                "property",
+                "map",
+                "layer",
+                "object",
+                "tile",
+                "tileset",
+                "wangcolor",
+                "wangset",
+                "project"
+            ]
+        },
+        {
+            "color": "#ffa0a0a4",
+            "drawFill": true,
+            "id": 6,
+            "members": [
+                {
+                    "name": "BlocksWalking",
+                    "propertyType": "IndexGridPosition",
+                    "type": "class",
+                    "value": {
+                    }
+                },
+                {
+                    "name": "IndexGridPosition",
+                    "propertyType": "IndexGridPosition",
+                    "type": "class",
+                    "value": {
+                    }
+                }
+            ],
+            "name": "TreeTileBundle",
+            "type": "class",
+            "useAs": [
+                "property",
+                "map",
+                "layer",
+                "object",
+                "tile",
+                "tileset",
+                "wangcolor",
+                "wangset",
+                "project"
+            ]
+        },
+        {
+            "color": "#ffa0a0a4",
+            "drawFill": true,
+            "id": 10,
+            "members": [
+            ],
+            "name": "TriggerOnMoveOnto",
+            "type": "class",
+            "useAs": [
+                "property",
+                "map",
+                "layer",
+                "object",
+                "tile",
+                "tileset",
+                "wangcolor",
+                "wangset",
+                "project"
+            ]
         }
     ]
 }

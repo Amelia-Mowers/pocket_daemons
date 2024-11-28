@@ -1,8 +1,11 @@
 use bevy::prelude::*;
 use std::ops::{Add, AddAssign, Sub, Neg};
+use std::convert::TryFrom;
 use bevy_ecs_tilemap::prelude::*;
 
 // use crate::graph::connection::Connection;
+
+pub const SCALE_FACTOR: f32 = 16.0;
 
 #[derive(Component, Debug, PartialEq, Eq, Hash, Default, Clone, Copy, Reflect)]
 pub struct GridTransform {
@@ -86,19 +89,30 @@ impl GridTransform {
 
 }
 
-impl GridTransform {
-    pub fn to_tile_pos(&self) -> Option<TilePos> {
-        if self.x >= 0 && self.y >= 0 {
-            Some(TilePos {
-                x: self.x as u32,
-                y: self.y as u32,
+impl TryFrom<GridTransform> for TilePos {
+    type Error = &'static str;
+
+    fn try_from(value: GridTransform) -> Result<Self, Self::Error> {
+        if value.x >= 0 && value.y >= 0 {
+            Ok(TilePos {
+                x: value.x as u32,
+                y: value.y as u32,
             })
         } else {
-            None
+            Err("Negative coordinates are not valid for TilePos")
         }
     }
 }
-
+    
+impl From<Transform> for GridTransform {
+    fn from(value: Transform) -> GridTransform {
+        GridTransform {
+            x: (value.translation.x / SCALE_FACTOR) as i16,
+            y: (value.translation.y / SCALE_FACTOR) as i16,
+        }
+    }
+}
+    
 impl Add for GridTransform {
     type Output = Self;
 

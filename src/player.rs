@@ -5,6 +5,7 @@ use bevy::prelude::*;
 use crate::graph::grid_transform::*;
 use crate::mob::*;
 use crate::control::*;
+use crate::map::*;
 
 pub struct PlayerPlugin;
 
@@ -14,22 +15,30 @@ pub struct Player;
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app
-            .add_systems(OnEnter(GameState::Playing), spawn_player)
             .add_systems(Update, (
+                spawn_player,
                 player_move_control.after(map_inputs_to_control_events),
             ).run_if(in_state(GameState::Playing)));
     }
 }
 
-fn spawn_player(mut commands: Commands, textures: Res<TextureAssets>) {
-    commands.spawn((
-        Player,
-        MobBundle {
-            texture: textures.player.clone(),
-            texture_atlas: TextureAtlas::from(textures.player_layout.clone()),
-            ..Default::default()
-        },
-    ));
+pub fn spawn_player(
+    mut commands: Commands, 
+    mut event: EventReader<PlayerSpawnEvent>,
+    textures: Res<TextureAssets>,
+) {
+    for event in event.read() {
+        commands.spawn((
+            Player,
+            MobBundle {
+                texture: textures.player.clone(),
+                texture_atlas: TextureAtlas::from(textures.player_layout.clone()),
+                grid_position: GridPosition(**event),
+                last_grid_position: LastGridPosition(**event),
+                ..Default::default()
+            },
+        ));
+    } 
 }
 
 pub fn player_move_control(

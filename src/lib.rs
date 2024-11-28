@@ -198,10 +198,11 @@ fn camera_follow_player(
     p: Query<&Transform, (With<Player>, Without<InGameCamera>)>,
     mut c: Query<&mut Transform, (With<InGameCamera>, Without<Player>)>,
 ) {
-    let mut camera_transform = c.single_mut();
-    let player_transform = p.single();
-
-    *camera_transform = *player_transform;
+    if let Ok(mut camera_transform) = c.get_single_mut() {
+        if let Ok(player_transform) = p.get_single() {
+            *camera_transform = *player_transform;
+        }
+    }
 }
 
 /// Scales camera projection to fit the window (integer multiples only).

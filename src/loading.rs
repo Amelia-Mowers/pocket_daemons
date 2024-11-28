@@ -4,6 +4,7 @@ use bevy_asset_loader::prelude::*;
 // use bevy_kira_audio::AudioSource;
 
 use bevy_ecs_tiled::prelude::*;
+use std::collections::HashMap;
 
 pub struct LoadingPlugin;
 
@@ -13,16 +14,44 @@ pub struct LoadingPlugin;
 impl Plugin for LoadingPlugin {
     fn build(&self, app: &mut App) {
         app
-        // .add_plugins(TilemapPlugin)
-        // .add_plugins(TiledMapPlugin)
+        .init_resource::<MapMap>()
         .add_loading_state(
             LoadingState::new(GameState::Loading)
                 .continue_to_state(GameState::Menu)
                 .load_collection::<AudioAssets>()
                 .load_collection::<TextureAssets>()
-                .load_collection::<MapAssets>()
+                // .load_collection::<MapAssets>()
+        )
+        .add_systems(OnEnter(GameState::Loading),
+            init_map_map,
         );
     }
+}
+
+const MAPLIST: &[&str] = &[
+    "rules_test",
+    "areas/road",
+    "areas/clearing",
+];
+
+#[derive(Default, Resource, Deref)]
+pub struct MapMap(HashMap<String, Handle<TiledMap>>);
+
+pub fn init_map_map(
+    mut map_map: ResMut<MapMap>,
+    asset_server: Res<AssetServer>,
+) {
+    // Initialize the map with each map handle loaded by the asset server
+    *map_map = MapMap(
+        MAPLIST.iter()
+            .map(|&map_name| {
+                let map_handle: Handle<TiledMap> = asset_server.load(
+                    &format!("maps/{}_emb.tmx", map_name)
+                );
+                (map_name.to_string(), map_handle)
+            })
+            .collect()
+    );
 }
 
 // the following asset collections will be loaded during the State `GameState::Loading`
@@ -34,11 +63,11 @@ pub struct AudioAssets {
     // pub flying: Handle<AudioSource>,
 }
 
-#[derive(AssetCollection, Resource)]
-pub struct MapAssets{
-    #[asset(path = "maps/rules_test_emb.tmx")]
-    pub test: Handle<TiledMap>,
-}
+// #[derive(AssetCollection, Resource)]
+// pub struct MapAssets{
+//     #[asset(path = "maps/rules_test_emb.tmx")]
+//     pub test: Handle<TiledMap>,
+// }
 
 #[derive(AssetCollection, Resource)]
 pub struct TextureAssets {

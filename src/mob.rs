@@ -6,25 +6,24 @@ use crate::graph::grid_transform::*;
 use crate::player::*;
 
 use crate::map::*;
-use bevy_ecs_tilemap::prelude::*;
 
 #[derive(Component, Default)]
 pub struct Mob;
 
+#[derive(Component, Deref, DerefMut, Reflect, Debug, Default)]
+pub struct GridPosition(pub GridTransform);
+
+#[derive(Component, Deref, DerefMut, Reflect, Debug, Default)]
+pub struct LastGridPosition(pub GridTransform);
+
 #[derive(Component, Deref, DerefMut, Reflect, Debug)]
-pub struct GridDirection(GridTransform);
+pub struct GridDirection(pub GridTransform);
 
 impl Default for GridDirection {
     fn default() -> Self {
         GridDirection(GridTransform::SOUTH)
     }
 }
-
-#[derive(Component, Deref, DerefMut, Reflect, Debug, Default)]
-pub struct GridPosition(GridTransform);
-
-#[derive(Component, Deref, DerefMut, Reflect, Debug, Default)]
-pub struct LastGridPosition(GridTransform);
 
 #[derive(Component, Deref, DerefMut, Reflect, Debug, Default)]
 pub struct MoveTo(pub Option<GridTransform>);
@@ -63,6 +62,7 @@ impl Plugin for MobPlugin {
         app.add_systems(Update, (
             move_mob.after(player_move_control),
         ).run_if(in_state(GameState::Playing)))
+        .add_event::<TriggerOnMoveOntoEvent>()
         .register_type::<GridDirection>()
         .register_type::<GridPosition>()
         .register_type::<LastGridPosition>()
@@ -91,6 +91,7 @@ pub struct MobBundle {
     pub visibility: Visibility,
     pub inherited_visibility: InheritedVisibility,
     pub view_visibility: ViewVisibility,
+    pub index_grid_position: IndexGridPosition,
 }
 
 impl Default for MobBundle {
@@ -107,7 +108,7 @@ impl Default for MobBundle {
             animation_timer: Default::default(),
 
             sprite: Sprite {
-                anchor: Anchor::BottomLeft,
+                anchor: Anchor::Custom(Vec2::new(-0.5, -(14.0/16.0))),
                 ..Default::default()
             },
             transform: Transform::from_translation(Vec3 { x: 0., y: 0., z: 1. }),
@@ -116,29 +117,33 @@ impl Default for MobBundle {
             visibility: Default::default(),
             inherited_visibility: Default::default(),
             view_visibility: Default::default(),
+            index_grid_position: IndexGridPosition,
         }
     }
+}
+
+#[derive(Event, Reflect, Debug)]
+pub struct TriggerOnMoveOntoEvent {
+    pub moved: Entity,
+    pub triggered: Entity,
 }
 
 fn move_mob(
     time: Res<Time>,
     mut query: Query<(
+        Entity,
         &mut GridPosition, 
         &mut LastGridPosition, 
         &mut GridDirection,
         &mut MoveTo,
         &mut MovementCooldown,
     ), With<Mob>>,
-    map_query: Query<&TileStorage, With<TerrainMap>>,
-    tile_query: Query<&Terrain>,
+    block_query: Query<Entity, With<BlocksWalking>>,
+    trigger_query: Query<Entity, With<TriggerOnMoveOnto>>,
+    mut grid_index: ResMut<GridIndex>,
+    mut move_trigger_event: EventWriter<TriggerOnMoveOntoEvent>,
 ) {
-    // Retrieve map and return early if unavailable
-    let map_storage = match map_query.get_single() {
-        Ok(storage) => storage,
-        Err(_) => return,
-    };
-
-    for (mut pos, mut last_pos, mut dir, mut move_to, mut cooldown) in &mut query {
+    for (mob_entity, mut pos, mut last_pos, mut dir, mut move_to, mut cooldown) in &mut query {
         cooldown.tick(time.delta());
 
         // Proceed only if a move command exists and cooldown is complete
@@ -150,20 +155,21 @@ fn move_mob(
             **dir = direction;
             let new_pos = **pos + direction;
 
-            // Try converting new position to a tile position
-            if let Some(tile_pos) = new_pos.to_tile_pos() {
-                // Check if a tile exists at the new position
-                if let Some(tile) = map_storage.checked_get(&tile_pos) {
-                    // Confirm that the terrain is walkable
-                    if let Ok(terrain) = tile_query.get(tile) {
-                        if terrain.get_terrain_data().walkable {
-                            **last_pos = pos.0;
-                            **pos = new_pos;
-                            cooldown.reset();
-                        }
-                    }
+            let entities = grid_index.get(&new_pos);
+
+            if !entities.iter().any(|&e| block_query.contains(e)) {
+                **last_pos = pos.0;
+                **pos = new_pos;
+                cooldown.reset();
+                for entity in entities.iter().filter(|&&e| trigger_query.contains(e)) {
+                    move_trigger_event.send(TriggerOnMoveOntoEvent { 
+                        moved: mob_entity,
+                        triggered: *entity,
+                    });
                 }
+                grid_index.update(mob_entity, new_pos);
             }
+
 
             // Clear the move command after processing
             *move_to = MoveTo(None);
