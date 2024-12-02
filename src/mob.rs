@@ -1,6 +1,7 @@
 use crate::GameState;
 use bevy::prelude::*;
 use bevy::sprite::*;
+use bevy::utils::Duration;
 
 use crate::graph::grid_transform::*;
 use crate::player::*;
@@ -48,10 +49,24 @@ pub struct MovementCooldown(Timer);
 
 impl Default for MovementCooldown {
     fn default() -> Self {
-        MovementCooldown(Timer::from_seconds(
-            0.4, 
+        let mut timer = Timer::new(
+            Duration::from_secs_f32(0.4),
             TimerMode::Once
-        ))
+        );
+        timer.finish();
+        warn!("Timer Spawn! And finished: {}", timer.finished());
+        MovementCooldown(timer)
+    }
+}
+
+pub trait TimerFinish {
+    fn finish(&mut self);
+}
+impl TimerFinish for Timer {
+    fn finish(&mut self) {
+        let duration = self.duration();
+        self.tick(duration);
+        self.tick(duration);
     }
 }
 
@@ -63,6 +78,7 @@ impl Plugin for MobPlugin {
             move_mob.after(player_move_control),
         ).run_if(in_state(GameState::Playing)))
         .add_event::<TriggerOnMoveOntoEvent>()
+        .add_event::<MobMoveEvent>()
         .register_type::<GridDirection>()
         .register_type::<GridPosition>()
         .register_type::<LastGridPosition>()
@@ -128,6 +144,12 @@ pub struct TriggerOnMoveOntoEvent {
     pub triggered: Entity,
 }
 
+#[derive(Event, Reflect, Debug)]
+pub struct MobMoveEvent  {
+    pub entity: Entity,
+    pub movement: GridTransform,
+}
+
 fn move_mob(
     time: Res<Time>,
     mut query: Query<(
@@ -135,44 +157,41 @@ fn move_mob(
         &mut GridPosition, 
         &mut LastGridPosition, 
         &mut GridDirection,
-        &mut MoveTo,
         &mut MovementCooldown,
     ), With<Mob>>,
     block_query: Query<Entity, With<BlocksWalking>>,
     trigger_query: Query<Entity, With<TriggerOnMoveOnto>>,
     mut grid_index: ResMut<GridIndex>,
+    mut mob_move_events: EventReader<MobMoveEvent>,
     mut move_trigger_event: EventWriter<TriggerOnMoveOntoEvent>,
 ) {
-    for (mob_entity, mut pos, mut last_pos, mut dir, mut move_to, mut cooldown) in &mut query {
-        cooldown.tick(time.delta());
+    for (_, _, _, _, mut cooldown)in &mut query {
+        (**cooldown).tick(time.delta());
+    }
 
-        // Proceed only if a move command exists and cooldown is complete
-        if let Some(direction) = move_to.0 {
-            if !cooldown.finished() {
-                continue;
-            }
+    for event in mob_move_events.read() {
+        if let Ok((mob_entity, mut pos, mut last_pos, mut dir, mut cooldown)) = query.get_mut(event.entity) {
+            if cooldown.finished() {
+                let new_pos = **pos + event.movement;
+                **dir = event.movement;
 
-            **dir = direction;
-            let new_pos = **pos + direction;
+                let grid_tile_entities = grid_index.get(&new_pos);
+                if !grid_tile_entities.iter().any(|&e| block_query.contains(e)) {
+                    **last_pos = pos.0;
+                    **pos = new_pos;
+                    cooldown.reset();
 
-            let entities = grid_index.get(&new_pos);
+                    for triggered_entity in grid_tile_entities.iter()
+                        .filter(|&&e| trigger_query.contains(e)) {
+                        move_trigger_event.send(TriggerOnMoveOntoEvent { 
+                            moved: mob_entity,
+                            triggered: *triggered_entity,
+                        });
+                    }
 
-            if !entities.iter().any(|&e| block_query.contains(e)) {
-                **last_pos = pos.0;
-                **pos = new_pos;
-                cooldown.reset();
-                for entity in entities.iter().filter(|&&e| trigger_query.contains(e)) {
-                    move_trigger_event.send(TriggerOnMoveOntoEvent { 
-                        moved: mob_entity,
-                        triggered: *entity,
-                    });
+                    grid_index.update(mob_entity, new_pos);
                 }
-                grid_index.update(mob_entity, new_pos);
             }
-
-
-            // Clear the move command after processing
-            *move_to = MoveTo(None);
         }
     }
 }

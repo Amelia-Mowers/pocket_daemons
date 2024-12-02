@@ -32,9 +32,9 @@ impl Plugin for MapPlugin {
         .register_tiled_custom_tile::<TreeTileBundle>("TreeTileBundle")
         .register_type::<SpawnData>()
         .register_type::<CurrentMap>()
-        .register_type::<PreviousMap>()
-        .insert_resource(CurrentMap("start".to_string()))
-        .insert_resource(PreviousMap("start".to_string()))
+        .register_type::<CurrentSpawn>()
+        .insert_resource(CurrentMap(None))
+        .insert_resource(CurrentSpawn(None))
         .init_resource::<GridIndex>()
         .add_event::<PlayerSpawnEvent>()
         .add_event::<ChangeMapEvent>()
@@ -85,10 +85,10 @@ impl GridIndex {
 pub struct IndexGridPosition;
 
 #[derive(Resource, Deref, DerefMut, Reflect, Debug, Default)]
-pub struct CurrentMap(String);
+pub struct CurrentMap(Option<String>);
 
 #[derive(Resource, Deref, DerefMut, Reflect, Debug, Default)]
-pub struct PreviousMap(String);
+pub struct CurrentSpawn(Option<String>);
 
 #[derive(TiledObject, Bundle, Default, Debug, Reflect)]
 struct PlayerSpawnBundle {
@@ -98,8 +98,10 @@ struct PlayerSpawnBundle {
 
 #[derive(TiledClass, Component, Default, Debug, Reflect)]
 pub struct SpawnData{
-    #[tiled_rename = "From"]
-    pub from: String,
+    #[tiled_rename = "Name"]
+    pub name: String,
+    #[tiled_rename = "FromDirection"]
+    pub from_direction: String,
 }
 
 
@@ -118,8 +120,10 @@ struct MapExitBundle {
 
 #[derive(TiledClass, Component, Default, Debug, Reflect)]
 pub struct ExitData{
-    #[tiled_rename = "To"]
-    pub to: String,
+    #[tiled_rename = "Map"]
+    pub map: String,
+    #[tiled_rename = "Spawn"]
+    pub spawn: String,
 }
 
 #[derive(TiledClass, Component, Default, Debug, Reflect)]
@@ -133,13 +137,19 @@ struct TreeTileBundle {
     block: BlocksWalking,
 }
 
-#[derive(Event, Deref, DerefMut, Reflect, Debug, Default)]
-pub struct ChangeMapEvent(String);
+#[derive(Event, Reflect, Debug, Default)]
+pub struct ChangeMapEvent {
+    pub map: String,
+    pub spawn: String,
+}
 
 fn init_map(
     mut event: EventWriter<ChangeMapEvent>,
 ) {
-    event.send(ChangeMapEvent("areas/road".to_string()));
+    event.send(ChangeMapEvent{
+        map: "areas/road".to_string(), 
+        spawn: "start".to_string()
+    });
 }
 
 fn map_exits(
@@ -151,7 +161,12 @@ fn map_exits(
     for event in events.read() {
         if player_query.contains(event.moved) {
             if let Ok(exit) = exit_query.get(event.triggered) {
-                change_map_event.send(ChangeMapEvent(exit.to.to_string()));
+                change_map_event.send(
+                    ChangeMapEvent{
+                        map: exit.map.to_string(),
+                        spawn: exit.spawn.to_string(),
+                    }
+                );
             }
         }
     }
@@ -160,22 +175,22 @@ fn map_exits(
 fn change_map(
     mut commands: Commands, 
     mut current_map: ResMut<CurrentMap>, 
-    mut previous_map: ResMut<PreviousMap>, 
+    mut current_spawn: ResMut<CurrentSpawn>, 
     map_map: Res<MapMap>, 
     mut event: EventReader<ChangeMapEvent>,
     maps: Query<Entity, With<TiledMapMarker>>, 
-    mobs: Query<Entity, With<Mob>>, 
+    mobs: Query<Entity, (With<Mob>, Without<Player>)>, 
 ) {
     for event in event.read() {
-        if let Some(handle) = map_map.get(&event.to_string()) {
+        if let Some(handle) = map_map.get(&event.map.to_string()) {
             for entity in &maps {
                 commands.entity(entity).despawn_recursive();
             }
             for entity in &mobs {
                 commands.entity(entity).despawn_recursive();
             }
-            *previous_map = PreviousMap(current_map.to_string());
-            *current_map = CurrentMap(event.to_string());
+            *current_map = CurrentMap(Some(event.map.to_string()));
+            *current_spawn = CurrentSpawn(Some(event.spawn.to_string()));
 
             commands.spawn(TiledMapBundle {
                 tiled_map: handle.clone(),
@@ -207,8 +222,11 @@ fn index_grid_positions(
     }
 }
 
-#[derive(Event, Deref, DerefMut, Reflect, Debug, Default)]
-pub struct PlayerSpawnEvent(GridTransform);
+#[derive(Event, Reflect, Debug, Default)]
+pub struct PlayerSpawnEvent {
+    pub location: GridTransform,
+    pub direction: GridTransform,
+}
 
 #[derive(Component)]
 pub struct ProcessedPlayerSpawn;
@@ -217,14 +235,24 @@ fn mark_player_spawn(
     mut commands: Commands, 
     mut event: EventWriter<PlayerSpawnEvent>,
     query: Query<(Entity, &SpawnData, &Transform), Without<ProcessedPlayerSpawn>>,
-    previous_map: Res<PreviousMap>, 
+    current_spawn: Res<CurrentSpawn>,
 ) {
     for (entity, data, transform) in &query {
         info!("Processing player spawn points");
         commands.entity(entity).insert(ProcessedPlayerSpawn);
-        if *data.from == **previous_map {
+        if Some((*data.name).to_string()) == **current_spawn {
             info!("Spawn point found");
-            event.send(PlayerSpawnEvent((*transform).into()));
+            event.send(PlayerSpawnEvent{
+                location: (*transform).into(),
+                direction: match &data.from_direction {
+                    val if *val == "north".to_string() => GridTransform::NORTH,
+                    val if *val == "east".to_string()  => GridTransform::EAST,
+                    val if *val == "south".to_string()  => GridTransform::SOUTH,
+                    val if *val == "west".to_string()  => GridTransform::WEST,
+                    val if *val == "center".to_string()  => GridTransform::ZERO,
+                    _ => {panic!("invalid spawn condition");}
+                },
+            });
         }
     }
 }

@@ -24,8 +24,8 @@
             "scale": 3,
             "selectedLayer": 2,
             "viewCenter": {
-                "x": 217.49999999999997,
-                "y": 262.5
+                "x": 235.83333333333331,
+                "y": 289.5
             }
         },
         "areas/clearing_emb.tmx": {
@@ -149,7 +149,7 @@
         "areas/road.tmx"
     ],
     "project": "maps.tiled-project",
-    "property.type": "TriggerOnMoveOnto",
+    "property.type": "string",
     "recentFiles": [
         "rules.tmx",
         "proto-tiles.tsx",

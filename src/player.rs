@@ -1,6 +1,7 @@
 use crate::loading::TextureAssets;
 use crate::GameState;
 use bevy::prelude::*;
+use bevy::ecs::query::QuerySingleError;
 
 use crate::graph::grid_transform::*;
 use crate::mob::*;
@@ -25,49 +26,71 @@ impl Plugin for PlayerPlugin {
 pub fn spawn_player(
     mut commands: Commands, 
     mut event: EventReader<PlayerSpawnEvent>,
+    mut mob_move_events: EventWriter<MobMoveEvent>,
     textures: Res<TextureAssets>,
+    mut query: Query<(
+        Entity,
+        &mut GridPosition, 
+        &mut LastGridPosition, 
+        &mut MovementCooldown,
+    ), With<Player>>,
 ) {
     for event in event.read() {
-        commands.spawn((
-            Player,
-            MobBundle {
-                texture: textures.player.clone(),
-                texture_atlas: TextureAtlas::from(textures.player_layout.clone()),
-                grid_position: GridPosition(**event),
-                last_grid_position: LastGridPosition(**event),
-                ..Default::default()
-            },
-        ));
+        let player_entity  = match query.get_single_mut() {
+            Ok((entity, mut pos, mut last, mut cooldown)) => {
+                *pos = GridPosition(event.location + event.direction);
+                *last = LastGridPosition(event.location + event.direction);
+                (**cooldown).finish();
+                entity
+            }
+            Err(QuerySingleError::NoEntities(_)) => {
+                commands.spawn((
+                    Player,
+                    MobBundle {
+                        texture: textures.player.clone(),
+                        texture_atlas: TextureAtlas::from(textures.player_layout.clone()),
+                        transform: (event.location + event.direction).into(),
+                        grid_position: GridPosition(event.location + event.direction),
+                        ..Default::default()
+                    },
+                )).id()
+            }
+            Err(QuerySingleError::MultipleEntities(_)) => {
+                panic!("Error: There is more than one player!");
+            }
+        };
+        mob_move_events.send(MobMoveEvent{
+            entity: player_entity,
+            movement: -event.direction,
+        });
     } 
 }
 
 pub fn player_move_control(
     mut control_events: EventReader<GameControlEvent>,
-    mut query: Query<
-        &mut MoveTo,
+    mut mob_move_events: EventWriter<MobMoveEvent>,
+    query: Query<
+        Entity,
         With<Player>
     >,
 ) {
-    let control = match control_events.read()
+    match control_events.read()
     .filter(|e| e.pressed())
     .last() {
-        Some(e) => Some(e.control),
-        None => None,
-    };
-
-    let new_move_to = match control {
-        Some(c) => {
-            match c {
-              GameControl::Up => Some(GridTransform::NORTH),
-              GameControl::Down => Some(GridTransform::SOUTH),
-              GameControl::Left => Some(GridTransform::WEST),
-              GameControl::Right => Some(GridTransform::EAST),
-            }
+        Some(e) => {
+            let movement = match e.control {
+                GameControl::Up => GridTransform::NORTH,
+                GameControl::Down => GridTransform::SOUTH,
+                GameControl::Left => GridTransform::WEST,
+                GameControl::Right => GridTransform::EAST,
+            };
+            for player in &query {
+                mob_move_events.send(MobMoveEvent{
+                    entity: player,
+                    movement: movement,
+                });
+            };
         },
-        None => None,
+        None => {},
     };
-    
-    for mut move_to in &mut query {
-        *move_to = MoveTo(new_move_to); 
-    }
 }
