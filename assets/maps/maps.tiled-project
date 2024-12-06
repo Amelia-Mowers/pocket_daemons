@@ -36,7 +36,12 @@
             "id": 9,
             "members": [
                 {
-                    "name": "To",
+                    "name": "Map",
+                    "type": "string",
+                    "value": ""
+                },
+                {
+                    "name": "Spawn",
                     "type": "string",
                     "value": ""
                 }
@@ -144,7 +149,12 @@
             "id": 4,
             "members": [
                 {
-                    "name": "From",
+                    "name": "FromDirection",
+                    "type": "string",
+                    "value": ""
+                },
+                {
+                    "name": "Name",
                     "type": "string",
                     "value": ""
                 }

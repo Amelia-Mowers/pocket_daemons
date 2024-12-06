@@ -66,6 +66,8 @@
    <properties>
     <property name="ExitData" type="class" propertytype="ExitData">
      <properties>
+      <property name="Map" value="areas/clearing"/>
+      <property name="Spawn" value="south"/>
       <property name="To" value="areas/clearing"/>
      </properties>
     </property>
@@ -75,6 +77,8 @@
    <properties>
     <property name="ExitData" type="class" propertytype="ExitData">
      <properties>
+      <property name="Map" value="areas/clearing"/>
+      <property name="Spawn" value="south"/>
       <property name="To" value="areas/clearing"/>
      </properties>
     </property>
@@ -84,6 +88,8 @@
    <properties>
     <property name="ExitData" type="class" propertytype="ExitData">
      <properties>
+      <property name="Map" value="areas/clearing"/>
+      <property name="Spawn" value="south"/>
       <property name="To" value="areas/clearing"/>
      </properties>
     </property>
@@ -94,6 +100,8 @@
     <property name="SpawnData" type="class" propertytype="SpawnData">
      <properties>
       <property name="From" value="areas/clearing"/>
+      <property name="FromDirection" value="north"/>
+      <property name="Name" value="north"/>
      </properties>
     </property>
    </properties>
@@ -103,6 +111,8 @@
     <property name="SpawnData" type="class" propertytype="SpawnData">
      <properties>
       <property name="From" value="start"/>
+      <property name="FromDirection" value="center"/>
+      <property name="Name" value="start"/>
      </properties>
     </property>
    </properties>
