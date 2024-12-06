@@ -17,7 +17,7 @@ impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app
             .add_systems(Update, (
-                spawn_player,
+                spawn_player.before(player_move_control),
                 player_move_control.after(map_inputs_to_control_events),
             ).run_if(in_state(GameState::Playing)));
     }
@@ -34,6 +34,7 @@ pub fn spawn_player(
         &mut LastGridPosition, 
         &mut MovementCooldown,
     ), With<Player>>,
+    mut map_and_player_loading: ResMut<MapAndPlayerLoading>,
 ) {
     for event in event.read() {
         let player_entity  = match query.get_single_mut() {
@@ -63,6 +64,7 @@ pub fn spawn_player(
             entity: player_entity,
             movement: -event.direction,
         });
+        **map_and_player_loading = false;
     } 
 }
 
@@ -76,7 +78,8 @@ pub fn player_move_control(
 ) {
     match control_events.read()
     .filter(|e| e.pressed())
-    .last() {
+    // .last() {
+    .nth(0) {
         Some(e) => {
             let movement = match e.control {
                 GameControl::Up => GridTransform::NORTH,

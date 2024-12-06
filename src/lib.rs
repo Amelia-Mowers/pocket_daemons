@@ -54,17 +54,19 @@ enum GameState {
 }
 
 /// In-game resolution width.
-const RES_WIDTH: u32 = 160;
+pub const RES_WIDTH: u32 = 160;
 
 /// In-game resolution height.
-const RES_HEIGHT: u32 = 144;
+pub const RES_HEIGHT: u32 = 144;
 
 /// Default render layers for pixel-perfect rendering.
 /// You can skip adding this component, as this is the default.
 const PIXEL_PERFECT_LAYERS: RenderLayers = RenderLayers::layer(0);
 
+const PIXEL_PERFECT_STATIC_LAYERS: RenderLayers = RenderLayers::layer(1);
+
 /// Render layers for high-resolution rendering.
-const HIGH_RES_LAYERS: RenderLayers = RenderLayers::layer(1);
+const HIGH_RES_LAYERS: RenderLayers = RenderLayers::layer(2);
 
 pub struct GamePlugin;
 
@@ -85,9 +87,11 @@ impl Plugin for GamePlugin {
         .insert_resource(Msaa::Off)
         .add_systems(Startup, (
             setup_camera, 
+            // setup_sprite,
         ))
         .add_systems(Update, (
             fit_canvas,
+            // rotate,
             camera_follow_player.run_if(in_state(GameState::Playing)),
         ));
 
@@ -97,6 +101,17 @@ impl Plugin for GamePlugin {
         }
     }
 }
+
+// #[derive(Component)]
+// struct Rotate;
+
+// /// Rotates entities to demonstrate grid snapping.
+// fn rotate(time: Res<Time>, mut transforms: Query<&mut Transform, With<Rotate>>) {
+//     for mut transform in &mut transforms {
+//         let dt = time.delta_seconds();
+//         transform.rotate_z(dt);
+//     }
+// }
 
 /// Low-resolution texture that contains the pixel-perfect world.
 /// Canvas itself is rendered to the high-resolution world.
@@ -112,16 +127,16 @@ struct InGameCamera;
 struct OuterCamera;
 
 // fn setup_sprite(mut commands: Commands, asset_server: Res<AssetServer>) {
-//     // the sample sprite that will be rendered to the pixel-perfect canvas
-//     commands.spawn((
-//         SpriteBundle {
-//             texture: asset_server.load("pixel/bevy_pixel_dark.png"),
-//             transform: Transform::from_xyz(-40., 20., 2.),
-//             ..default()
-//         },
-//         Rotate,
-//         PIXEL_PERFECT_LAYERS,
-//     ));
+    // the sample sprite that will be rendered to the pixel-perfect canvas
+    // commands.spawn((
+    //     SpriteBundle {
+    //         texture: asset_server.load("pixel/bevy_pixel_dark.png"),
+    //         transform: Transform::from_xyz(-40., 20., 2.),
+    //         ..default()
+    //     },
+    //     Rotate,
+    //     PIXEL_PERFECT_STATIC_LAYERS,
+    // ));
 
 //     // the sample sprite that will be rendered to the high-res "outer world"
 //     commands.spawn((
@@ -159,17 +174,35 @@ fn setup_camera(mut commands: Commands, mut images: ResMut<Assets<Image>>) {
         ..default()
     };
 
+    let mut static_canvas = Image {
+        texture_descriptor: TextureDescriptor {
+            label: None,
+            size: canvas_size,
+            dimension: TextureDimension::D2,
+            format: TextureFormat::Bgra8UnormSrgb,
+            mip_level_count: 1,
+            sample_count: 1,
+            usage: TextureUsages::TEXTURE_BINDING
+                | TextureUsages::COPY_DST
+                | TextureUsages::RENDER_ATTACHMENT,
+            view_formats: &[],
+        },
+        ..default()
+    };
+
     // fill image.data with zeroes
     canvas.resize(canvas_size);
+    static_canvas.resize(canvas_size);
 
     let image_handle = images.add(canvas);
+    let static_image_handle = images.add(static_canvas);
 
     // this camera renders whatever is on `PIXEL_PERFECT_LAYERS` to the canvas
     commands.spawn((
         Camera2dBundle {
             camera: Camera {
                 // render before the "main pass" camera
-                order: -1,
+                order: -2,
                 target: RenderTarget::Image(image_handle.clone()),
                 ..default()
             },
@@ -179,10 +212,36 @@ fn setup_camera(mut commands: Commands, mut images: ResMut<Assets<Image>>) {
         PIXEL_PERFECT_LAYERS,
     ));
 
+    commands.spawn((
+        Camera2dBundle {
+            camera: Camera {
+                // render before the "main pass" camera
+                order: -1,
+                target: RenderTarget::Image(static_image_handle.clone()),
+                clear_color: ClearColorConfig::Custom(Color::NONE),
+                // clear_color: ClearColorConfig::None,
+                ..default()
+            },
+            ..default()
+        },
+        PIXEL_PERFECT_STATIC_LAYERS,
+    ));
+
     // spawn the canvas
     commands.spawn((
         SpriteBundle {
             texture: image_handle,
+            ..default()
+        },
+        Canvas,
+        HIGH_RES_LAYERS,
+    ));
+
+    // spawn the canvas
+    commands.spawn((
+        SpriteBundle {
+            texture: static_image_handle,
+            transform: Transform::from_xyz(0., 0., 10.),
             ..default()
         },
         Canvas,

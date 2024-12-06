@@ -54,7 +54,6 @@ impl Default for MovementCooldown {
             TimerMode::Once
         );
         timer.finish();
-        warn!("Timer Spawn! And finished: {}", timer.finished());
         MovementCooldown(timer)
     }
 }
@@ -165,10 +164,6 @@ fn move_mob(
     mut mob_move_events: EventReader<MobMoveEvent>,
     mut move_trigger_event: EventWriter<TriggerOnMoveOntoEvent>,
 ) {
-    for (_, _, _, _, mut cooldown)in &mut query {
-        (**cooldown).tick(time.delta());
-    }
-
     for event in mob_move_events.read() {
         if let Ok((mob_entity, mut pos, mut last_pos, mut dir, mut cooldown)) = query.get_mut(event.entity) {
             if cooldown.finished() {
@@ -193,5 +188,9 @@ fn move_mob(
                 }
             }
         }
+    }
+
+    for (_, _, _, _, mut cooldown)in &mut query {
+        (**cooldown).tick(time.delta());
     }
 }

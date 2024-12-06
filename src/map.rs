@@ -3,6 +3,9 @@ use std::collections::HashMap;
 use crate::loading::*;
 use crate::GameState;
 use bevy::prelude::*;
+use bevy::ecs::query::QuerySingleError;
+use bevy::sprite::*;
+use crate::Srgba;
 
 use bevy_ecs_tilemap::prelude::*;
 use bevy_ecs_tiled::prelude::*;
@@ -11,19 +14,28 @@ use crate::graph::grid_transform::*;
 use crate::mob::Mob;
 use crate::mob::GridPosition;
 use crate::mob::TriggerOnMoveOntoEvent;
+use crate::mob::MovementCooldown;
 use crate::Player;
+use crate::RES_WIDTH;
+use crate::RES_HEIGHT;
+use crate::PIXEL_PERFECT_STATIC_LAYERS;
 
 pub struct MapPlugin;
 
 impl Plugin for MapPlugin {
     fn build(&self, app: &mut App) {
         app
-        .add_systems(OnEnter(GameState::Playing), init_map)
+        .add_systems(OnEnter(GameState::Playing), (
+            init_map,
+            init_transition_effect,
+        ))
         .add_systems(Update, (
             index_grid_positions,
             mark_player_spawn,
             change_map,
             map_exits,
+            transition_effect,
+            update_map_changed.before(change_map),
         ))
         .add_plugins(TilemapPlugin)
         .add_plugins(TiledMapPlugin)
@@ -36,9 +48,98 @@ impl Plugin for MapPlugin {
         .insert_resource(CurrentMap(None))
         .insert_resource(CurrentSpawn(None))
         .init_resource::<GridIndex>()
+        .init_resource::<ChangeMapQueue>()
+        .init_resource::<MapChangedSinceMove>()
+        .init_resource::<MapAndPlayerLoading>()
         .add_event::<PlayerSpawnEvent>()
-        .add_event::<ChangeMapEvent>()
-        .insert_resource(ClearColor(Color::srgb_u8(24, 48, 48)));
+        .insert_resource(ClearColor(Color::srgb_u8(47, 76, 64)));
+    }
+}
+
+#[derive(Component)]
+struct Transition;
+
+fn init_transition_effect (
+    mut commands: Commands, 
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
+) {
+    commands.spawn((
+        MaterialMesh2dBundle {
+            mesh: Mesh2dHandle(meshes.add(Rectangle::new(RES_WIDTH as f32 + 1.0, RES_HEIGHT as f32 + 1.0))),
+            transform: Transform::from_xyz(0., 0., 2.),
+            material: materials.add(Color::srgb_u8(47, 76, 64)),
+            ..default()
+        },
+        PIXEL_PERFECT_STATIC_LAYERS,
+        Transition,
+    ));
+}
+
+fn transition_effect (
+    material_handles: Query<&Handle<ColorMaterial>, With<Transition>>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
+    player: Query<&MovementCooldown, With<Player>>, 
+    change_map_queue: Res<ChangeMapQueue>,
+    map_changed: Res<MapChangedSinceMove>, 
+    map_and_player_loading: Res<MapAndPlayerLoading>,
+) {    
+    let player_cooldown = player.get_single();
+
+    let new_alpha = match change_map_queue.is_empty() {
+        false => match player_cooldown {
+            Ok(cooldown) => match **map_and_player_loading {
+                false => cooldown.fraction(),
+                true => 1.0,
+            },
+            Err(QuerySingleError::NoEntities(_)) => 1.0,
+            Err(QuerySingleError::MultipleEntities(_)) => {
+                panic!("Error: There is more than one player!");
+            }
+        },
+        true => match **map_changed {
+            true => match player_cooldown {
+                Ok(cooldown) => match **map_and_player_loading {
+                    false => 1.0 - cooldown.fraction(),
+                    true => 1.0,
+                },
+                Err(QuerySingleError::NoEntities(_)) => 1.0,
+                Err(QuerySingleError::MultipleEntities(_)) => {
+                    panic!("Error: There is more than one player!");
+                }
+            },
+            false => 0.0,
+        },
+    };
+
+    let threshold = 0.8;
+
+    let scaled_alpha = if new_alpha < threshold {
+        new_alpha / threshold
+    } else {
+        1.0
+    };
+
+    
+    warn!("change queue empty: {} \nmap_changed: {}\nnew_alpha:{}\nscaled_alpha:{}",
+        change_map_queue.is_empty(),
+        **map_changed,
+        new_alpha,
+        scaled_alpha,
+    );
+
+    for material_handle in material_handles.iter() {
+        if let Some(material) = materials.get_mut(material_handle) {
+            if let Color::Srgba(ref mut srgba) = material.color {
+                *srgba = Srgba::new(
+                    srgba.red,
+                    srgba.green,
+                    srgba.blue,
+                    // new_alpha,
+                    scaled_alpha,
+                );
+            }
+        }
     }
 }
 
@@ -137,16 +238,49 @@ struct TreeTileBundle {
     block: BlocksWalking,
 }
 
-#[derive(Event, Reflect, Debug, Default)]
+#[derive(Reflect, Debug, Default)]
 pub struct ChangeMapEvent {
     pub map: String,
     pub spawn: String,
 }
 
-fn init_map(
-    mut event: EventWriter<ChangeMapEvent>,
+#[derive(Resource, Deref, DerefMut, Reflect, Debug, Default)]
+pub struct ChangeMapQueue(Vec<ChangeMapEvent>);
+
+#[derive(Resource, Deref, DerefMut, Reflect, Debug, Default)]
+pub struct MapChangedSinceMove(bool);
+
+#[derive(Resource, Deref, DerefMut, Reflect, Debug, Default)]
+pub struct MapAndPlayerLoading(bool);
+
+fn update_map_changed(
+    mut map_changed: ResMut<MapChangedSinceMove>, 
+    map_and_player_loading: Res<MapAndPlayerLoading>,
+    player: Query<&MovementCooldown, With<Player>>, 
 ) {
-    event.send(ChangeMapEvent{
+    warn!("Update Map Changed");
+    match player.get_single() {
+        // Ok(cooldown) => cooldown.finished() && !cooldown.just_finished(),
+        Ok(cooldown) => {
+            if cooldown.finished() && !**map_and_player_loading {
+                **map_changed = false;
+                // warn!("Map Changed = False");
+            }
+        },
+        Err(QuerySingleError::NoEntities(_)) => {
+            **map_changed = true;
+            warn!("Map Changed = True");
+        },
+        Err(QuerySingleError::MultipleEntities(_)) => {
+            panic!("Error: There is more than one player!");
+        }
+    };
+}
+
+fn init_map(
+    mut change_map_queue: ResMut<ChangeMapQueue>,
+) {
+    change_map_queue.push(ChangeMapEvent{
         map: "areas/road".to_string(), 
         spawn: "start".to_string()
     });
@@ -156,12 +290,12 @@ fn map_exits(
     player_query: Query<Entity, With<Player>>,
     exit_query: Query<&ExitData>,
     mut events: EventReader<TriggerOnMoveOntoEvent>,
-    mut change_map_event: EventWriter<ChangeMapEvent>,
+    mut change_map_queue: ResMut<ChangeMapQueue>,
 ) {
     for event in events.read() {
         if player_query.contains(event.moved) {
             if let Ok(exit) = exit_query.get(event.triggered) {
-                change_map_event.send(
+                change_map_queue.push(
                     ChangeMapEvent{
                         map: exit.map.to_string(),
                         spawn: exit.spawn.to_string(),
@@ -174,30 +308,50 @@ fn map_exits(
 
 fn change_map(
     mut commands: Commands, 
-    mut current_map: ResMut<CurrentMap>, 
+    mut change_map_queue: ResMut<ChangeMapQueue>,
     mut current_spawn: ResMut<CurrentSpawn>, 
+    mut current_map: ResMut<CurrentMap>, 
+    mut map_changed: ResMut<MapChangedSinceMove>, 
     map_map: Res<MapMap>, 
-    mut event: EventReader<ChangeMapEvent>,
     maps: Query<Entity, With<TiledMapMarker>>, 
     mobs: Query<Entity, (With<Mob>, Without<Player>)>, 
+    player: Query<&MovementCooldown, With<Player>>, 
+    mut map_and_player_loading: ResMut<MapAndPlayerLoading>,
 ) {
-    for event in event.read() {
-        if let Some(handle) = map_map.get(&event.map.to_string()) {
-            for entity in &maps {
-                commands.entity(entity).despawn_recursive();
+    if !change_map_queue.is_empty() {
+        let cooldown_finished = match player.get_single() {
+            Ok(cooldown) => cooldown.finished(),
+            Err(QuerySingleError::NoEntities(_)) => true,
+            Err(QuerySingleError::MultipleEntities(_)) => {
+                panic!("Error: There is more than one player!");
             }
-            for entity in &mobs {
-                commands.entity(entity).despawn_recursive();
-            }
-            *current_map = CurrentMap(Some(event.map.to_string()));
-            *current_spawn = CurrentSpawn(Some(event.spawn.to_string()));
+        };
+        if cooldown_finished {
+            match change_map_queue.last() {
+                Some(event) => {
+                    if let Some(handle) = map_map.get(&event.map.to_string()) {
+                        for entity in &maps {
+                            commands.entity(entity).despawn_recursive();
+                        }
+                        for entity in &mobs {
+                            commands.entity(entity).despawn_recursive();
+                        }
+                        *current_map = CurrentMap(Some(event.map.to_string()));
+                        *current_spawn = CurrentSpawn(Some(event.spawn.to_string()));
 
-            commands.spawn(TiledMapBundle {
-                tiled_map: handle.clone(),
-                ..Default::default()
-            });
-        } else {
-            warn!("map not in MapMap: {:?}", event);
+                        commands.spawn(TiledMapBundle {
+                            tiled_map: handle.clone(),
+                            ..Default::default()
+                        });
+                        **map_changed = true;
+                        **map_and_player_loading = true;
+                    } else {
+                        warn!("map not in MapMap: {:?}", event);
+                    }
+                },
+                None => {},
+            };
+            change_map_queue.clear();
         }
     }
 }

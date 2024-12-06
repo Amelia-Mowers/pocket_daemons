@@ -67,7 +67,7 @@ fn update_mob_animation(
             **index = (**index + 1) % 4;
         }
 
-        if !move_cool.finished() {
+        if move_cool.just_finished() || !move_cool.finished() {
             (*atlas).index = base + **index;
         } else {
             (*atlas).index = base + 1;
