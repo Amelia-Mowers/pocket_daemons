@@ -33,6 +33,31 @@
         {
             "color": "#ffa0a0a4",
             "drawFill": true,
+            "id": 12,
+            "members": [
+                {
+                    "name": "Reference",
+                    "type": "string",
+                    "value": ""
+                }
+            ],
+            "name": "Dialog",
+            "type": "class",
+            "useAs": [
+                "property",
+                "map",
+                "layer",
+                "object",
+                "tile",
+                "tileset",
+                "wangcolor",
+                "wangset",
+                "project"
+            ]
+        },
+        {
+            "color": "#ffa0a0a4",
+            "drawFill": true,
             "id": 9,
             "members": [
                 {
@@ -67,6 +92,86 @@
             "members": [
             ],
             "name": "IndexGridPosition",
+            "type": "class",
+            "useAs": [
+                "property",
+                "map",
+                "layer",
+                "object",
+                "tile",
+                "tileset",
+                "wangcolor",
+                "wangset",
+                "project"
+            ]
+        },
+        {
+            "color": "#ffa0a0a4",
+            "drawFill": true,
+            "id": 13,
+            "members": [
+                {
+                    "name": "Reference",
+                    "type": "string",
+                    "value": ""
+                }
+            ],
+            "name": "InitSprite",
+            "type": "class",
+            "useAs": [
+                "property",
+                "map",
+                "layer",
+                "object",
+                "tile",
+                "tileset",
+                "wangcolor",
+                "wangset",
+                "project"
+            ]
+        },
+        {
+            "color": "#ffa0a0a4",
+            "drawFill": true,
+            "id": 11,
+            "members": [
+                {
+                    "name": "BlocksWalking",
+                    "propertyType": "BlocksWalking",
+                    "type": "class",
+                    "value": {
+                    }
+                },
+                {
+                    "name": "Dialog",
+                    "propertyType": "Dialog",
+                    "type": "class",
+                    "value": {
+                    }
+                },
+                {
+                    "name": "IndexGridPosition",
+                    "propertyType": "IndexGridPosition",
+                    "type": "class",
+                    "value": {
+                    }
+                },
+                {
+                    "name": "InitSprite",
+                    "propertyType": "InitSprite",
+                    "type": "class",
+                    "value": {
+                    }
+                },
+                {
+                    "name": "TriggerOnInteract",
+                    "propertyType": "TriggerOnInteract",
+                    "type": "class",
+                    "value": {
+                    }
+                }
+            ],
+            "name": "InteractDialogBundle",
             "type": "class",
             "useAs": [
                 "property",
@@ -214,6 +319,26 @@
             "members": [
             ],
             "name": "TriggerOnMoveOnto",
+            "type": "class",
+            "useAs": [
+                "property",
+                "map",
+                "layer",
+                "object",
+                "tile",
+                "tileset",
+                "wangcolor",
+                "wangset",
+                "project"
+            ]
+        },
+        {
+            "color": "#ffa0a0a4",
+            "drawFill": true,
+            "id": 14,
+            "members": [
+            ],
+            "name": "TriggerOnInteract",
             "type": "class",
             "useAs": [
                 "property",
