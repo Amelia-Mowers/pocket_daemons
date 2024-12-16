@@ -1,4 +1,3 @@
-use crate::GameState;
 use bevy::prelude::*;
 use bevy::sprite::*;
 use bevy::utils::Duration;
@@ -75,9 +74,11 @@ impl Plugin for MobPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Update, (
             move_mob.after(player_move_control),
-        ).run_if(in_state(GameState::Playing)))
+            mob_interact,
+        ))
         .add_event::<TriggerOnMoveOntoEvent>()
         .add_event::<MobMoveEvent>()
+        .add_event::<MobInteractEvent>()
         .register_type::<GridDirection>()
         .register_type::<GridPosition>()
         .register_type::<LastGridPosition>()
@@ -192,5 +193,44 @@ fn move_mob(
 
     for (_, _, _, _, mut cooldown)in &mut query {
         (**cooldown).tick(time.delta());
+    }
+}
+
+#[derive(Event, Reflect, Debug)]
+pub struct TriggerEvent {
+    pub triggering: Entity,
+    pub triggered: Entity,
+}
+
+#[derive(Event, Reflect, Debug)]
+pub struct MobInteractEvent  {
+    pub entity: Entity,
+}
+
+fn mob_interact(
+    query: Query<(
+        &GridPosition, 
+        &GridDirection,
+        &MovementCooldown,
+    ), With<Mob>>,
+    trigger_query: Query<Entity, With<TriggerOnInteract>>,
+    grid_index: Res<GridIndex>,
+    mut mob_interact_events: EventReader<MobInteractEvent>,
+    mut trigger_event: EventWriter<TriggerEvent>,
+) {
+    for event in mob_interact_events.read() {
+        if let Ok((pos, dir, cooldown)) = query.get(event.entity) {
+            if cooldown.finished() {
+                let interact_pos = **pos + **dir;
+                let grid_tile_entities = grid_index.get(&interact_pos);
+
+                for triggered_entity in grid_tile_entities.iter().filter(|&&e| trigger_query.contains(e)) {
+                    trigger_event.send(TriggerEvent { 
+                        triggering: event.entity,
+                        triggered: *triggered_entity,
+                    });
+                }
+            }
+        }
     }
 }

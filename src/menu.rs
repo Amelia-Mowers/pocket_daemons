@@ -1,6 +1,9 @@
 use crate::loading::TextureAssets;
 use crate::GameState;
 use bevy::prelude::*;
+use crate::map::ChangeMapQueue;
+use crate::loading::MapAssets;
+use crate::map::ChangeMapEvent;
 
 pub struct MenuPlugin;
 
@@ -182,6 +185,8 @@ struct ChangeState(GameState);
 struct OpenLink(&'static str);
 
 fn click_play_button(
+    mut change_map_queue: ResMut<ChangeMapQueue>,
+    map_assets: Res<MapAssets>, 
     mut next_state: ResMut<NextState<GameState>>,
     mut interaction_query: Query<
         (
@@ -199,6 +204,10 @@ fn click_play_button(
             Interaction::Pressed => {
                 if let Some(state) = change_state {
                     next_state.set(state.0.clone());
+                    change_map_queue.push(ChangeMapEvent{
+                        map: map_assets.road.clone(), 
+                        spawn: "start".to_string(),
+                    });
                 } else if let Some(link) = open_link {
                     if let Err(error) = webbrowser::open(link.0) {
                         warn!("Failed to open link {error:?}");

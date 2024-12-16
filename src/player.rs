@@ -19,6 +19,7 @@ impl Plugin for PlayerPlugin {
             .add_systems(Update, (
                 spawn_player.before(player_move_control),
                 player_move_control.after(map_inputs_to_control_events),
+                player_interact_control.after(map_inputs_to_control_events),
             ).run_if(in_state(GameState::Playing)));
     }
 }
@@ -45,12 +46,17 @@ pub fn spawn_player(
                 entity
             }
             Err(QuerySingleError::NoEntities(_)) => {
+                let new_transform_base:Transform = (event.location + event.direction).into();
                 commands.spawn((
                     Player,
                     MobBundle {
                         texture: textures.player.clone(),
                         texture_atlas: TextureAtlas::from(textures.player_layout.clone()),
-                        transform: (event.location + event.direction).into(),
+                        transform: Transform::from_translation(Vec3 {
+                             x: new_transform_base.translation.x, 
+                             y: new_transform_base.translation.y, 
+                             z: 1.0 
+                        }),
                         grid_position: GridPosition(event.location + event.direction),
                         ..Default::default()
                     },
@@ -78,7 +84,7 @@ pub fn player_move_control(
 ) {
     match control_events.read()
     .filter(|e| e.pressed())
-    // .last() {
+    .filter(|e| e.is_movement())
     .nth(0) {
         Some(e) => {
             let movement = match e.control {
@@ -86,6 +92,7 @@ pub fn player_move_control(
                 GameControl::Down => GridTransform::SOUTH,
                 GameControl::Left => GridTransform::WEST,
                 GameControl::Right => GridTransform::EAST,
+                _ => panic!("Not a Move Control"),
             };
             for player in &query {
                 mob_move_events.send(MobMoveEvent{
@@ -97,3 +104,30 @@ pub fn player_move_control(
         None => {},
     };
 }
+
+pub fn player_interact_control(
+    state: Res<State<GameState>>,
+    mut control_events: EventReader<GameControlEvent>,
+    mut mob_interact_events: EventWriter<MobInteractEvent>,
+    query: Query<
+        Entity,
+        With<Player>
+    >,
+) {
+    match control_events.read()
+    .filter(|e| e.just_pressed())
+    .filter(|e| e.control == GameControl::Interact)
+    .nth(0) {
+        Some(_) => {
+            if !state.is_changed() {
+                for player in &query {
+                    mob_interact_events.send(MobInteractEvent{
+                        entity: player,
+                    });
+                };
+            }
+        },
+        None => {},
+    };
+}
+

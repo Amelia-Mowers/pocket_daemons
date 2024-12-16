@@ -87,6 +87,7 @@ ldtk_rust = "0.6.0"
 serde = "1.0.210"
 ron = "0.8.1"
 bevy-inspector-egui = { version = "0.25.2", default-features = false, features = ["bevy_pbr", "bevy_render", "egui_open_url"] }
+sys-locale = "0.3.2"
 # bevy-inspector-egui = "0.25.2"
 
 [build-dependencies]

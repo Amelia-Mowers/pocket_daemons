@@ -37,12 +37,13 @@ pub enum GameControl {
     Down,
     Left,
     Right,
+    Interact,
 }
 
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum ControlStatus {
     Pressed,
-    // JustPressed,
+    JustPressed,
     // JustReleased,
 }
 
@@ -56,10 +57,22 @@ impl GameControlEvent {
     pub fn pressed(&self) -> bool {
         self.status == ControlStatus::Pressed
     }
+    pub fn just_pressed(&self) -> bool {
+        self.status == ControlStatus::JustPressed
+    }
+    pub fn is_movement(&self) -> bool {
+        match self.control {
+            GameControl::Up => true,
+            GameControl::Down => true,
+            GameControl::Left => true,
+            GameControl::Right => true,
+            _ => false,
+        }
+    }
 }
 
 #[derive(Default, Resource, Deref)]
-#[deref(forward)]
+// #[deref(forward)]
 pub struct InputMap(HashMap<Input, GameControl>);
 
 pub fn init_input_map(
@@ -74,6 +87,7 @@ pub fn init_input_map(
         (Input::Keyboard(KeyCode::ArrowDown), GameControl::Down),
         (Input::Keyboard(KeyCode::ArrowLeft), GameControl::Left),
         (Input::Keyboard(KeyCode::ArrowRight), GameControl::Right),
+        (Input::Keyboard(KeyCode::Space), GameControl::Interact),
     ]));
 }
 
@@ -88,6 +102,17 @@ pub fn map_inputs_to_control_events(
                 control.send(GameControlEvent{
                    control: *c,
                    status: ControlStatus::Pressed,
+                });
+            },
+            None => {},
+        }
+    }
+    for key in keys.get_just_pressed() {
+        match input_map.get(&Input::Keyboard(*key)) {
+            Some(c) => {
+                control.send(GameControlEvent{
+                   control: *c,
+                   status: ControlStatus::JustPressed,
                 });
             },
             None => {},

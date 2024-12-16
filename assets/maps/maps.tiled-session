@@ -21,11 +21,11 @@
             "expandedObjectLayers": [
                 3
             ],
-            "scale": 3,
-            "selectedLayer": 2,
+            "scale": 2,
+            "selectedLayer": 4,
             "viewCenter": {
-                "x": 235.83333333333331,
-                "y": 289.5
+                "x": 271.5,
+                "y": 155.25
             }
         },
         "areas/clearing_emb.tmx": {
@@ -35,8 +35,8 @@
             "scale": 3,
             "selectedLayer": 2,
             "viewCenter": {
-                "x": 247.83333333333331,
-                "y": 327.8333333333333
+                "x": 229.49999999999997,
+                "y": 224.16666666666666
             }
         },
         "areas/clearing_emb.tmx#object-tiles": {
@@ -52,19 +52,22 @@
             "expandedObjectLayers": [
                 3
             ],
-            "scale": 4,
-            "selectedLayer": 2,
+            "scale": 3,
+            "selectedLayer": 4,
             "viewCenter": {
-                "x": 226.875,
-                "y": 54.875
+                "x": 243.49999999999997,
+                "y": 163.5
             }
         },
         "areas/road_emb.tmx": {
+            "expandedObjectLayers": [
+                3
+            ],
             "scale": 3,
-            "selectedLayer": 2,
+            "selectedLayer": 4,
             "viewCenter": {
-                "x": 269.8333333333333,
-                "y": 114.16666666666667
+                "x": 184.33333333333331,
+                "y": 160.16666666666663
             }
         },
         "areas/road_emb.tmx#object-tiles": {
@@ -87,14 +90,15 @@
             "scaleInEditor": 5.5
         },
         "proto-tiles.tsx": {
+            "scaleInDock": 1,
             "scaleInEditor": 4
         },
         "rules.tmx": {
-            "scale": 5.5,
-            "selectedLayer": 2,
+            "scale": 2,
+            "selectedLayer": 4,
             "viewCenter": {
-                "x": 292.8181818181818,
-                "y": 168.63636363636363
+                "x": 192,
+                "y": 164.25
             }
         },
         "rules_test.tmx": {
@@ -104,8 +108,8 @@
             "scale": 2,
             "selectedLayer": 2,
             "viewCenter": {
-                "x": 120.25,
-                "y": 205.75
+                "x": 213.25,
+                "y": 204.75
             }
         },
         "rules_test_emb.tmx": {
@@ -133,7 +137,7 @@
         "tiles.tsx": {
             "dynamicWrapping": false,
             "scaleInDock": 1,
-            "scaleInEditor": 1
+            "scaleInEditor": 4
         }
     },
     "last.exportedFilePath": "/home/mia/Documents/pocket_daemons/assets/maps/areas",
@@ -143,22 +147,25 @@
     "map.tileHeight": 16,
     "map.tileWidth": 16,
     "openFiles": [
-        "rules_test.tmx",
         "tiles.tsx",
         "object-tiles.tsx",
-        "areas/road.tmx"
+        "areas/road.tmx",
+        "areas/clearing.tmx",
+        "rules.tmx",
+        "areas/road_emb.tmx"
     ],
     "project": "maps.tiled-project",
-    "property.type": "string",
+    "property.type": "BlocksWalking",
     "recentFiles": [
-        "rules.tmx",
-        "proto-tiles.tsx",
-        "areas/clearing_emb.tmx",
         "areas/road_emb.tmx",
-        "rules_test.tmx",
+        "rules.tmx",
+        "areas/clearing.tmx",
         "areas/road.tmx",
         "object-tiles.tsx",
         "tiles.tsx",
+        "rules_test.tmx",
+        "areas/clearing_emb.tmx",
+        "proto-tiles.tsx",
         "rules_test_emb.tmx",
         "objects.tsx"
     ],

@@ -10,6 +10,8 @@ mod map;
 mod helpers;
 mod mob;
 mod control;
+mod text_loading;
+mod dialog;
 
 use crate::audio::InternalAudioPlugin;
 use crate::loading::LoadingPlugin;
@@ -20,6 +22,8 @@ use crate::map::MapPlugin;
 use crate::display::mob::MobDisplayPlugin;
 use crate::control::ControlPlugin;
 use crate::mob::MobPlugin;
+use crate::text_loading::TextLoadingPlugin;
+use crate::dialog::DialogPlugin;
 
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 
@@ -46,9 +50,11 @@ use bevy::prelude::*;
 enum GameState {
     // During the loading State the LoadingPlugin will load our assets
     #[default]
-    Loading,
+    TextLoading,
+    AssetLoading,
     // During this State the actual game logic is executed
     Playing,
+    Dialog,
     // Here the menu is drawn and waiting for player interaction
     Menu,
 }
@@ -82,6 +88,8 @@ impl Plugin for GamePlugin {
             MobDisplayPlugin,
             MapPlugin,
             ControlPlugin,
+            TextLoadingPlugin,
+            DialogPlugin,
             WorldInspectorPlugin::new()
         ))
         .insert_resource(Msaa::Off)
@@ -102,17 +110,6 @@ impl Plugin for GamePlugin {
     }
 }
 
-// #[derive(Component)]
-// struct Rotate;
-
-// /// Rotates entities to demonstrate grid snapping.
-// fn rotate(time: Res<Time>, mut transforms: Query<&mut Transform, With<Rotate>>) {
-//     for mut transform in &mut transforms {
-//         let dt = time.delta_seconds();
-//         transform.rotate_z(dt);
-//     }
-// }
-
 /// Low-resolution texture that contains the pixel-perfect world.
 /// Canvas itself is rendered to the high-resolution world.
 #[derive(Component)]
@@ -125,30 +122,6 @@ struct InGameCamera;
 /// Camera that renders the [`Canvas`] (and other graphics on [`HIGH_RES_LAYERS`]) to the screen.
 #[derive(Component)]
 struct OuterCamera;
-
-// fn setup_sprite(mut commands: Commands, asset_server: Res<AssetServer>) {
-    // the sample sprite that will be rendered to the pixel-perfect canvas
-    // commands.spawn((
-    //     SpriteBundle {
-    //         texture: asset_server.load("pixel/bevy_pixel_dark.png"),
-    //         transform: Transform::from_xyz(-40., 20., 2.),
-    //         ..default()
-    //     },
-    //     Rotate,
-    //     PIXEL_PERFECT_STATIC_LAYERS,
-    // ));
-
-//     // the sample sprite that will be rendered to the high-res "outer world"
-//     commands.spawn((
-//         SpriteBundle {
-//             texture: asset_server.load("pixel/bevy_pixel_light.png"),
-//             transform: Transform::from_xyz(-40., -20., 2.),
-//             ..default()
-//         },
-//         Rotate,
-//         HIGH_RES_LAYERS,
-//     ));
-// }
 
 fn setup_camera(mut commands: Commands, mut images: ResMut<Assets<Image>>) {
     let canvas_size = Extent3d {
@@ -222,6 +195,11 @@ fn setup_camera(mut commands: Commands, mut images: ResMut<Assets<Image>>) {
                 // clear_color: ClearColorConfig::None,
                 ..default()
             },
+            transform: Transform::from_xyz(
+                RES_WIDTH as f32 / 2., 
+                RES_HEIGHT as f32 / 2., 
+                10.,
+            ),
             ..default()
         },
         PIXEL_PERFECT_STATIC_LAYERS,
@@ -259,7 +237,15 @@ fn camera_follow_player(
 ) {
     if let Ok(mut camera_transform) = c.get_single_mut() {
         if let Ok(player_transform) = p.get_single() {
-            *camera_transform = *player_transform;
+            // *camera_transform = *player_transform;
+            *camera_transform = (*player_transform).with_translation(
+                (*player_transform).translation +
+                Vec3 {
+                    x: 8.,
+                    y: 8.,
+                    z: 0.,
+                }
+            );
         }
     }
 }

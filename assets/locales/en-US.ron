@@ -1,0 +1,12 @@
+GameText(
+    string_test: "test",
+    dialog_test: Dialog([
+        Page(speaker: "sign", mood: "neutral", spans: [
+          Span(text: "This is a test!",),  
+          Span(text: "\nAnd some more!",),  
+        ]),
+        Page(speaker: "sign", mood: "mad", spans: [
+          Span(text: "And another page!",),  
+        ]),
+    ]),
+)
