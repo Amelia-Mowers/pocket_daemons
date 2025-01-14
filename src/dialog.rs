@@ -6,20 +6,21 @@ use crate::text_loading::Dialog;
 use crate::RES_WIDTH;
 use crate::PIXEL_PERFECT_STATIC_LAYERS;
 use crate::loading::TextureAssets;
+use crate::loading::FontAssets;
 
 use crate::control::GameControlEvent;
 use crate::control::GameControl;
-use crate::loading::FontAssets;
+use crate::state_stack::StateStack;
 
-use bevy::text::Text2dBounds;
-use bevy::text::BreakLineOn;
+use bevy::text::TextBounds;
+use bevy::text::LineBreak;
 
 pub struct DialogPlugin;
 
 impl Plugin for DialogPlugin {
     fn build(&self, app: &mut App) {
         app
-            .add_systems(OnEnter(GameState::Playing), (
+            .add_systems(OnExit(GameState::AssetLoading), (
                 init_dialog,
             ))
             .add_systems(OnEnter(GameState::Dialog), (
@@ -79,52 +80,57 @@ struct DialogText;
 fn init_dialog(
     mut commands: Commands,
     textures: Res<TextureAssets>,
+    fonts: Res<FontAssets>,
 ) {
     let box_size = Vec2::new(RES_WIDTH as f32 - 16., 48.);
     let text_box_size = Vec2::new(box_size.x - 4., box_size.y - 4.);
 
     commands.spawn((
-        SpriteBundle {
-            texture: textures.dialog_box.clone(),
-            transform: Transform::from_xyz(
-                8.,
-                8.,
-                0.,
-            ),
-            sprite: Sprite {
-                custom_size: Some(box_size),
-                anchor: Anchor::BottomLeft,
-                ..default()
-            },
-            visibility: Visibility::Hidden,
+        Name::new("Dialog Box".to_string()),
+        Transform::from_xyz(
+            8.,
+            8.,
+            0.,
+        ),
+        Sprite {
+            image: textures.dialog_box.clone(),
+            custom_size: Some(box_size),
+            anchor: Anchor::BottomLeft,
+            image_mode: SpriteImageMode::Sliced(TextureSlicer {
+                border: BorderRect::square(8.),
+                center_scale_mode: SliceScaleMode::Stretch,
+                sides_scale_mode: SliceScaleMode::Stretch,
+                max_corner_scale: 1.0,
+            }),
             ..default()
         },
-        ImageScaleMode::Sliced(TextureSlicer {
-            border: BorderRect::square(8.),
-            center_scale_mode: SliceScaleMode::Stretch,
-            sides_scale_mode: SliceScaleMode::Stretch,
-            max_corner_scale: 1.0,
-        }),
+        Visibility::Hidden,
         PIXEL_PERFECT_STATIC_LAYERS,
         DialogBox,
     )).with_children(|builder| {
         builder.spawn((
-            Text2dBundle {
-                text: Text {
-                    sections: vec![],
-                    justify: JustifyText::Left,
-                    linebreak_behavior: BreakLineOn::NoWrap,
-                    ..default()
-                },
-                text_anchor: Anchor::TopLeft,
-                text_2d_bounds: Text2dBounds { size: text_box_size },
-                transform: Transform::from_xyz(
-                    8.,
-                    box_size.y - 2.,
-                    1.,
-                ),
-                ..default()
+            Name::new("Dialog Text".to_string()),
+            Text2d::new("".to_string()),
+            TextColor(Color::srgb_u8(47, 76, 64)),
+            TextFont {
+                font: fonts.font.clone(),
+                font_size: 10.,
+                ..Default::default()
             },
+            TextLayout {
+                justify: JustifyText::Left,
+                linebreak: LineBreak::NoWrap,
+            },
+            Anchor::TopLeft,
+            TextBounds { 
+                width: Some(text_box_size.x), 
+                height: Some(text_box_size.y), 
+            },
+            Transform::from_xyz(
+                8.,
+                box_size.y - 2.,
+                10.,
+            ),
             PIXEL_PERFECT_STATIC_LAYERS,
             DialogText,
         ));
@@ -188,8 +194,7 @@ fn update_current_page_text(
 
 /// System that updates the dialog text if the CurrentPageText resource changed.
 fn stream_text(
-    mut dialog_text_query: Query<&mut Text, With<DialogText>>,
-    fonts: Res<FontAssets>,
+    mut dialog_text_query: Query<&mut Text2d, With<DialogText>>,
     current_page_text: Res<CurrentPageText>,
 ) {
     // Only update if the resource has changed this frame.
@@ -197,23 +202,9 @@ fn stream_text(
         return;
     }
 
-    let text_style = TextStyle {
-        font: fonts.font.clone(),
-        font_size: 12.,
-        color: Color::srgb_u8(47, 76, 64),
-        ..default()
-    };
-
     let displayed_text = &current_page_text.full_text[..current_page_text.current_index];
     for mut text in &mut dialog_text_query {
-        *text = Text {
-            sections: vec![
-                TextSection::new(displayed_text, text_style.clone()),
-            ],
-            justify: JustifyText::Left,
-            linebreak_behavior: BreakLineOn::NoWrap,
-            ..default()
-        };
+        *text = Text2d::new(displayed_text);
     }
 }
 
@@ -221,6 +212,7 @@ pub fn dialog_control(
     state: Res<State<GameState>>,
     mut control_events: EventReader<GameControlEvent>,
     mut next_state: ResMut<NextState<GameState>>,
+    mut state_stack: ResMut<StateStack>,
     current_dialog: Res<CurrentDialog>,
     current_page_index: Res<CurrentPageIndex>,
     mut page_events: EventWriter<PageEvent>,
@@ -248,11 +240,11 @@ pub fn dialog_control(
                 if current_index < total_pages - 1 {
                     page_events.send(PageEvent(current_index + 1));
                 } else {
-                    next_state.set(GameState::Playing);
+                    next_state.set(state_stack.back());
                 }
             } else {
                 // If there's no dialog, just close.
-                next_state.set(GameState::Playing);
+                    next_state.set(state_stack.back());
             }
         }
     }

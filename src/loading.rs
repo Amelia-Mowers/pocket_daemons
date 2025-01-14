@@ -28,8 +28,8 @@ impl Plugin for LoadingPlugin {
 
 #[derive(AssetCollection, Reflect, Resource)]
 pub struct MapAssets {
-    #[asset(path = "maps/rules_test_emb.tmx")]
-    pub test: Handle<TiledMap>,
+    // #[asset(path = "maps/rules_test_emb.tmx")]
+    // pub test: Handle<TiledMap>,
     
     #[asset(path = "maps/areas/road_emb.tmx")]
     pub road: Handle<TiledMap>,
@@ -55,6 +55,9 @@ pub struct TextureAssets {
     #[asset(path = "textures/bevy.png")]
     pub bevy: Handle<Image>,
     
+    #[asset(path = "sprites/title.png")]
+    pub title: Handle<Image>,
+    
     #[asset(texture_atlas_layout(
         tile_size_x = 16, 
         tile_size_y = 16, 
@@ -66,11 +69,25 @@ pub struct TextureAssets {
     #[asset(path = "sprites/player.png")]
     pub player: Handle<Image>,
 
+    #[asset(texture_atlas_layout(
+        tile_size_x = 16, 
+        tile_size_y = 16, 
+        columns = 6, 
+        rows = 4
+    ))]
+    pub mob_layout: Handle<TextureAtlasLayout>,
+
+    #[asset(path = "sprites/mob.png")]
+    pub mob: Handle<Image>,
+
     #[asset(path = "sprites/sign.png")]
     pub sign: Handle<Image>,
 
     #[asset(path = "sprites/dialog_box.png")]
     pub dialog_box: Handle<Image>,
+
+    #[asset(path = "sprites/menu_pointer.png")]
+    pub menu_pointer: Handle<Image>,
 
     #[asset(path = "textures/github.png")]
     pub github: Handle<Image>,

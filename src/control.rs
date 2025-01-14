@@ -88,6 +88,7 @@ pub fn init_input_map(
         (Input::Keyboard(KeyCode::ArrowLeft), GameControl::Left),
         (Input::Keyboard(KeyCode::ArrowRight), GameControl::Right),
         (Input::Keyboard(KeyCode::Space), GameControl::Interact),
+        (Input::Keyboard(KeyCode::Enter), GameControl::Interact),
     ]));
 }
 

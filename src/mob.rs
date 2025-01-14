@@ -1,5 +1,4 @@
 use bevy::prelude::*;
-use bevy::sprite::*;
 use bevy::utils::Duration;
 
 use crate::graph::grid_transform::*;
@@ -8,6 +7,16 @@ use crate::player::*;
 use crate::map::*;
 
 #[derive(Component, Default)]
+#[require(
+    Sprite,
+    Transform,
+    GridPosition,
+    LastGridPosition,
+    GridDirection,
+    MovementCooldown,
+    AnimationIndex,
+    AnimationTimer,
+)]
 pub struct Mob;
 
 #[derive(Component, Deref, DerefMut, Reflect, Debug, Default)]
@@ -25,11 +34,28 @@ impl Default for GridDirection {
     }
 }
 
-#[derive(Component, Deref, DerefMut, Reflect, Debug, Default)]
-pub struct MoveTo(pub Option<GridTransform>);
+#[derive(Component, Reflect, Debug)]
+pub struct AnimationIndex {
+    pub current: usize,
+    pub max: usize,
+    pub move_only: bool,
+}
 
-#[derive(Component, Deref, DerefMut, Reflect, Debug, Default)]
-pub struct AnimationIndex(usize);
+impl AnimationIndex {
+    fn new(max: usize, move_only: bool) -> Self {
+        AnimationIndex {
+            current: 0,
+            max: max,
+            move_only: move_only,
+        }
+    }
+}
+
+impl Default for AnimationIndex {
+    fn default() -> Self {
+        AnimationIndex::new(4, true)
+    }
+}
 
 #[derive(Component, Deref, DerefMut, Reflect, Debug)]
 pub struct AnimationTimer(Timer);
@@ -82,59 +108,8 @@ impl Plugin for MobPlugin {
         .register_type::<GridDirection>()
         .register_type::<GridPosition>()
         .register_type::<LastGridPosition>()
-        .register_type::<MoveTo>()
         .register_type::<MovementCooldown>()
         .register_type::<GridTransform>();
-    }
-}
-
-#[derive(Bundle)]
-pub struct MobBundle {
-    pub mob: Mob,
-    pub grid_position: GridPosition,
-    pub last_grid_position: LastGridPosition,
-    pub move_to: MoveTo,
-    pub grid_direction: GridDirection,
-    pub movement_cooldown: MovementCooldown,
-    pub texture_atlas: TextureAtlas,
-    pub animation_index: AnimationIndex,
-    pub animation_timer: AnimationTimer,
-
-    pub sprite: Sprite,
-    pub transform: Transform,
-    pub global_transform: GlobalTransform,
-    pub texture: Handle<Image>,
-    pub visibility: Visibility,
-    pub inherited_visibility: InheritedVisibility,
-    pub view_visibility: ViewVisibility,
-    pub index_grid_position: IndexGridPosition,
-}
-
-impl Default for MobBundle {
-    fn default() -> Self {
-        Self {
-            mob: Default::default(),
-            grid_position: Default::default(),
-            last_grid_position: Default::default(),
-            move_to: Default::default(),
-            grid_direction: Default::default(),
-            movement_cooldown: Default::default(),
-            texture_atlas: Default::default(),
-            animation_index: Default::default(),
-            animation_timer: Default::default(),
-
-            sprite: Sprite {
-                anchor: Anchor::Custom(Vec2::new(-0.5, -(14.0/16.0))),
-                ..Default::default()
-            },
-            transform: Transform::from_translation(Vec3 { x: 0., y: 0., z: 1. }),
-            global_transform: Default::default(),
-            texture: Default::default(),
-            visibility: Default::default(),
-            inherited_visibility: Default::default(),
-            view_visibility: Default::default(),
-            index_grid_position: IndexGridPosition,
-        }
     }
 }
 

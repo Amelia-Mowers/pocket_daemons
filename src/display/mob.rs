@@ -49,7 +49,7 @@ fn update_mob_animation(
         &MovementCooldown,
         &mut AnimationIndex, 
         &mut AnimationTimer,
-        &mut TextureAtlas,
+        &mut Sprite,
     )>,
 ) { 
     for (
@@ -57,20 +57,22 @@ fn update_mob_animation(
         move_cool,
         mut index,
         mut timer,
-        mut atlas,
+        mut sprite,
     ) in &mut query {
 
-        let base = direction.cardinal_index() * 4;
+        let base = direction.cardinal_index() * (*index).max;
 
         timer.tick(time.delta());
         if timer.just_finished() {
-            **index = (**index + 1) % 4;
+            (*index).current = ((*index).current + 1) % (*index).max;
         }
 
-        if move_cool.just_finished() || !move_cool.finished() {
-            (*atlas).index = base + **index;
-        } else {
-            (*atlas).index = base + 1;
+        if let Some(ref mut atlas) = &mut sprite.texture_atlas {
+            if move_cool.just_finished() || !move_cool.finished() || !(*index).move_only {
+                atlas.index = base + index.current;
+            } else {
+                atlas.index = base + 1;
+            }
         }
     }
 }

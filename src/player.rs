@@ -1,6 +1,7 @@
 use crate::loading::TextureAssets;
 use crate::GameState;
 use bevy::prelude::*;
+use bevy::sprite::*;
 use bevy::ecs::query::QuerySingleError;
 
 use crate::graph::grid_transform::*;
@@ -11,6 +12,7 @@ use crate::map::*;
 pub struct PlayerPlugin;
 
 #[derive(Component)]
+#[require(Mob)]
 pub struct Player;
 
 impl Plugin for PlayerPlugin {
@@ -49,17 +51,18 @@ pub fn spawn_player(
                 let new_transform_base:Transform = (event.location + event.direction).into();
                 commands.spawn((
                     Player,
-                    MobBundle {
-                        texture: textures.player.clone(),
-                        texture_atlas: TextureAtlas::from(textures.player_layout.clone()),
-                        transform: Transform::from_translation(Vec3 {
-                             x: new_transform_base.translation.x, 
-                             y: new_transform_base.translation.y, 
-                             z: 1.0 
-                        }),
-                        grid_position: GridPosition(event.location + event.direction),
-                        ..Default::default()
+                    Sprite {
+                        image: textures.player.clone(),
+                        texture_atlas: Some(TextureAtlas::from(textures.player_layout.clone())),
+                        anchor: Anchor::Custom(Vec2::new(-0.5, -(14.0/16.0))),
+                        ..default()
                     },
+                    Transform::from_translation(Vec3 {
+                         x: new_transform_base.translation.x, 
+                         y: new_transform_base.translation.y, 
+                         z: 1.0 
+                    }),
+                    GridPosition(event.location + event.direction),
                 )).id()
             }
             Err(QuerySingleError::MultipleEntities(_)) => {

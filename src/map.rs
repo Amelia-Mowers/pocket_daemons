@@ -15,6 +15,7 @@ use crate::mob::Mob;
 use crate::mob::GridPosition;
 use crate::mob::TriggerOnMoveOntoEvent;
 use crate::mob::MovementCooldown;
+use crate::state_stack::StateStack;
 
 use crate::mob::TriggerEvent;
 use crate::Player;
@@ -44,20 +45,25 @@ impl Plugin for MapPlugin {
             map_exits,
             transition_effect,
             trigger_dialog,
+            hide_on_hide_this,
             update_map_changed.before(change_map),
         ).run_if(in_state(GameState::Playing)))
         .add_plugins(TilemapPlugin)
-        .add_plugins(TiledMapPlugin)
-        .register_tiled_object::<PlayerSpawnBundle>("PlayerSpawnBundle")
-        .register_tiled_object::<MapExitBundle>("MapExitBundle")
-        .register_tiled_object::<InteractDialogBundle>("InteractDialogBundle")
-        .register_tiled_custom_tile::<TreeTileBundle>("TreeTileBundle")
-        .register_type::<SpawnData>()
+        .add_plugins(TiledMapPlugin::default())
         .register_type::<CurrentMap>()
         .register_type::<CurrentSpawn>()
+        .register_type::<SpawnData>()
+        .register_type::<TriggerOnMoveOnto>()
+        .register_type::<ExitData>()
+        .register_type::<TriggerOnInteract>()
+        .register_type::<DialogReference>()
+        .register_type::<InitSprite>()
+        .register_type::<BlocksWalking>()
+        .register_type::<HideThis>()
         .insert_resource(CurrentMap(None))
         .insert_resource(CurrentSpawn(None))
         .init_resource::<GridIndex>()
+        .register_type::<GridIndex>()
         .init_resource::<ChangeMapQueue>()
         .init_resource::<MapChangedSinceMove>()
         .init_resource::<MapAndPlayerLoading>()
@@ -66,6 +72,75 @@ impl Plugin for MapPlugin {
         .insert_resource(ClearColor(Color::srgb_u8(47, 76, 64)));
     }
 }
+
+#[derive(Component, Default, Debug, Reflect)]
+pub struct IndexGridPosition;
+
+#[derive(Resource, Deref, DerefMut, Reflect, Debug, Default)]
+pub struct CurrentMap(Option<Handle<TiledMap>>);
+
+#[derive(Resource, Deref, DerefMut, Reflect, Debug, Default)]
+pub struct CurrentSpawn(Option<String>);
+
+#[derive(Component, Default, Debug, Reflect)]
+#[reflect(Component, Default)]
+pub struct SpawnData{
+    pub name: String,
+    pub from_direction: String,
+}
+
+#[derive(Component, Default, Debug, Reflect)]
+#[reflect(Component, Default)]
+#[require(IndexGridPosition)]
+pub struct TriggerOnMoveOnto;
+
+#[derive(Component, Default, Debug, Reflect)]
+#[reflect(Component, Default)]
+pub struct ExitData{
+    pub map: String,
+    pub spawn: String,
+}
+
+#[derive(Component, Default, Debug, Reflect)]
+#[reflect(Component, Default)]
+#[require(IndexGridPosition)]
+pub struct TriggerOnInteract;
+
+#[derive(Component, Default, Debug, Reflect)]
+#[reflect(Component, Default)]
+pub struct DialogReference {
+    pub reference: String,
+}
+
+#[derive(Component, Default, Debug, Reflect)]
+#[reflect(Component, Default)]
+pub struct InitSprite {
+    pub reference: String,
+}
+
+#[derive(Component, Default, Debug, Reflect)]
+#[reflect(Component, Default)]
+#[require(IndexGridPosition)]
+pub struct BlocksWalking;
+
+#[derive(Component, Default, Debug, Reflect)]
+#[reflect(Component, Default)]
+pub struct HideThis;
+
+#[derive(Reflect, Debug, Default)]
+pub struct ChangeMapEvent {
+    pub map: Handle<TiledMap>,
+    pub spawn: String,
+}
+
+#[derive(Resource, Deref, DerefMut, Reflect, Debug, Default)]
+pub struct ChangeMapQueue(Vec<ChangeMapEvent>);
+
+#[derive(Resource, Deref, DerefMut, Reflect, Debug, Default)]
+pub struct MapChangedSinceMove(bool);
+
+#[derive(Resource, Deref, DerefMut, Reflect, Debug, Default)]
+pub struct MapAndPlayerLoading(bool);
 
 #[derive(Component)]
 struct Transition;
@@ -76,26 +151,25 @@ fn init_transition_effect (
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
     commands.spawn((
-        MaterialMesh2dBundle {
-            mesh: Mesh2dHandle(meshes.add(Rectangle::new(
-                RES_WIDTH as f32, 
-                RES_HEIGHT as f32,
-            ))),
-            transform: Transform::from_xyz(
-                RES_WIDTH as f32 / 2.0, 
-                RES_HEIGHT as f32 / 2.0, 
-                2.
-            ),
-            material: materials.add(Color::srgba_u8(47, 76, 64, 0)),
-            ..default()
-        },
+        Mesh2d(meshes.add(Rectangle::new(
+            RES_WIDTH as f32, 
+            RES_HEIGHT as f32,
+        ))),
+        MeshMaterial2d(materials.add(
+            Color::srgba_u8(47, 76, 64, 0))
+        ),
+        Transform::from_xyz(
+            RES_WIDTH as f32 / 2.0, 
+            RES_HEIGHT as f32 / 2.0, 
+            2.
+        ),
         PIXEL_PERFECT_STATIC_LAYERS,
         Transition,
     ));
 }
 
 fn transition_effect (
-    material_handles: Query<&Handle<ColorMaterial>, With<Transition>>,
+    material_handles: Query<&MeshMaterial2d<ColorMaterial>, With<Transition>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
     player: Query<&MovementCooldown, With<Player>>, 
     change_map_queue: Res<ChangeMapQueue>,
@@ -206,105 +280,6 @@ impl GridIndex {
     }
 }
 
-#[derive(TiledClass, Component, Default, Debug, Reflect)]
-pub struct IndexGridPosition;
-
-#[derive(Resource, Deref, DerefMut, Reflect, Debug, Default)]
-pub struct CurrentMap(Option<Handle<TiledMap>>);
-
-#[derive(Resource, Deref, DerefMut, Reflect, Debug, Default)]
-pub struct CurrentSpawn(Option<String>);
-
-#[derive(TiledObject, Bundle, Default, Debug, Reflect)]
-struct PlayerSpawnBundle {
-    #[tiled_rename = "SpawnData"]
-    data: SpawnData,
-}
-
-#[derive(TiledClass, Component, Default, Debug, Reflect)]
-pub struct SpawnData{
-    #[tiled_rename = "Name"]
-    pub name: String,
-    #[tiled_rename = "FromDirection"]
-    pub from_direction: String,
-}
-
-#[derive(TiledClass, Component, Default, Debug, Reflect)]
-pub struct TriggerOnMoveOnto;
-
-#[derive(TiledObject, Bundle, Default, Debug, Reflect)]
-struct MapExitBundle {
-    #[tiled_rename = "ExitData"]
-    data: ExitData,
-    #[tiled_rename = "IndexGridPostion"]
-    index_flag: IndexGridPosition,
-    #[tiled_rename = "TriggerOnMoveOnto"]
-    trigger: TriggerOnMoveOnto,
-}
-
-#[derive(TiledClass, Component, Default, Debug, Reflect)]
-pub struct ExitData{
-    #[tiled_rename = "Map"]
-    pub map: String,
-    #[tiled_rename = "Spawn"]
-    pub spawn: String,
-}
-
-#[derive(TiledClass, Component, Default, Debug, Reflect)]
-pub struct TriggerOnInteract;
-
-#[derive(TiledObject, Bundle, Default, Debug, Reflect)]
-struct InteractDialogBundle {
-    #[tiled_rename = "Dialog"]
-    dialog: DialogReference,
-    #[tiled_rename = "IndexGridPostion"]
-    index_flag: IndexGridPosition,
-    #[tiled_rename = "InitSprite"]
-    init_sprite: InitSprite,
-    #[tiled_rename = "TriggerOnInteract"]
-    trigger: TriggerOnInteract,
-    #[tiled_rename = "BlocksWalking"]
-    block: BlocksWalking,
-}
-
-#[derive(TiledClass, Component, Default, Debug, Reflect)]
-pub struct DialogReference {
-    #[tiled_rename = "Reference"]
-    pub reference: String,
-}
-
-#[derive(TiledClass, Component, Default, Debug, Reflect)]
-pub struct InitSprite {
-    #[tiled_rename = "Reference"]
-    pub reference: String,
-}
-
-#[derive(TiledClass, Component, Default, Debug, Reflect)]
-pub struct BlocksWalking;
-
-#[derive(TiledCustomTile, Bundle, Default, Debug, Reflect)]
-struct TreeTileBundle {
-    #[tiled_rename = "IndexGridPostion"]
-    index_flag: IndexGridPosition,
-    #[tiled_rename = "BlocksWalking"]
-    block: BlocksWalking,
-}
-
-#[derive(Reflect, Debug, Default)]
-pub struct ChangeMapEvent {
-    pub map: Handle<TiledMap>,
-    pub spawn: String,
-}
-
-#[derive(Resource, Deref, DerefMut, Reflect, Debug, Default)]
-pub struct ChangeMapQueue(Vec<ChangeMapEvent>);
-
-#[derive(Resource, Deref, DerefMut, Reflect, Debug, Default)]
-pub struct MapChangedSinceMove(bool);
-
-#[derive(Resource, Deref, DerefMut, Reflect, Debug, Default)]
-pub struct MapAndPlayerLoading(bool);
-
 fn update_map_changed(
     mut map_changed: ResMut<MapChangedSinceMove>, 
     map_and_player_loading: Res<MapAndPlayerLoading>,
@@ -351,6 +326,7 @@ fn trigger_dialog(
     mut events: EventReader<TriggerEvent>,
     mut current_dialog: ResMut<CurrentDialog>,
     mut next_state: ResMut<NextState<GameState>>,
+    mut state_stack: ResMut<StateStack>,
     game_text: Res<GameText>,
 ) {
     for event in events.read() {
@@ -358,7 +334,7 @@ fn trigger_dialog(
             warn!("Dialog: {}", dialog.reference);
             let next_dialog = game_text.get_field::<Dialog>(&dialog.reference).unwrap();
             *current_dialog = CurrentDialog(Some(next_dialog.clone()));
-            next_state.set(GameState::Dialog);
+            next_state.set(state_stack.push(GameState::Dialog));
         }
     }
 }
@@ -394,10 +370,8 @@ fn change_map(
                     *current_map = CurrentMap(Some(event.map.clone()));
                     *current_spawn = CurrentSpawn(Some(event.spawn.to_string()));
 
-                    commands.spawn(TiledMapBundle {
-                        tiled_map: event.map.clone(),
-                        ..Default::default()
-                    });
+                    commands.spawn(TiledMapHandle(event.map.clone()));
+                        
                     **map_changed = true;
                     **map_and_player_loading = true;
                 },
@@ -416,15 +390,36 @@ pub struct TerrainMap;
 
 fn index_grid_positions(
     mut commands: Commands, 
-    mut query: Query<(Entity, &Transform), With<IndexGridPosition>>,
+    mut transform_query: Query<(Entity, &Transform), With<IndexGridPosition>>,
+    mut tile_pos_query: Query<(Entity, &TilePos), With<IndexGridPosition>>,
     mut grid_index: ResMut<GridIndex>,
 ) {
-    for (entity, transform) in &mut query {
+    for (entity, transform) in &mut transform_query {
         let grid_pos = (*transform).into();
         commands.entity(entity)
         .remove::<IndexGridPosition>()
         .insert(GridPosition(grid_pos));
         grid_index.update(entity, grid_pos);
+    }
+    for (entity, tile_pos) in &mut tile_pos_query {
+        let grid_pos = GridTransform::new(
+            tile_pos.x.try_into().unwrap(), 
+            tile_pos.y.try_into().unwrap(),
+        );
+        commands.entity(entity)
+        .remove::<IndexGridPosition>()
+        .insert(GridPosition(grid_pos));
+        grid_index.update(entity, grid_pos);
+    }
+}
+
+fn hide_on_hide_this (
+    mut commands: Commands, 
+    mut query: Query<(Entity, &mut Visibility), With<HideThis>>,
+) {
+    for (entity, mut visibility) in &mut query {
+        *visibility = Visibility::Hidden;
+        commands.entity(entity).remove::<HideThis>();
     }
 }
 
@@ -436,13 +431,13 @@ fn init_sprite(
     for (entity, init_sprite, mut transform) in &mut query {
         commands.entity(entity)
         .remove::<InitSprite>()
-        .insert((
-            textures.get_field::<Handle<Image>>(&init_sprite.reference).unwrap().clone(),   
+        .insert(
             Sprite {
+                image: textures.get_field::<Handle<Image>>(&init_sprite.reference).unwrap().clone(),   
                 anchor: Anchor::Custom(Vec2::new(-0.5, -(14.0/16.0))),
                 ..Default::default()
             },
-        ));
+        );
         *transform = Transform::from_translation(Vec3 {
              x: transform.translation.x, 
              y: transform.translation.y, 

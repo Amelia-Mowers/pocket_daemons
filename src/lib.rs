@@ -12,6 +12,7 @@ mod mob;
 mod control;
 mod text_loading;
 mod dialog;
+mod state_stack;
 
 use crate::audio::InternalAudioPlugin;
 use crate::loading::LoadingPlugin;
@@ -24,6 +25,7 @@ use crate::control::ControlPlugin;
 use crate::mob::MobPlugin;
 use crate::text_loading::TextLoadingPlugin;
 use crate::dialog::DialogPlugin;
+use crate::state_stack::StateStackPlugin;
 
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 
@@ -46,7 +48,7 @@ use bevy::prelude::*;
 // This example game uses States to separate logic
 // See https://bevy-cheatbook.github.io/programming/states.html
 // Or https://github.com/bevyengine/bevy/blob/main/examples/ecs/state.rs
-#[derive(States, Default, Clone, Eq, PartialEq, Debug, Hash)]
+#[derive(States, Default, Reflect, Clone, Eq, PartialEq, Debug, Hash)]
 enum GameState {
     // During the loading State the LoadingPlugin will load our assets
     #[default]
@@ -78,8 +80,9 @@ pub struct GamePlugin;
 
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
-        app.init_state::<GameState>()
-            .add_plugins((
+        app
+        .init_state::<GameState>()
+        .add_plugins((
             LoadingPlugin,
             MenuPlugin,
             InternalAudioPlugin,
@@ -90,9 +93,9 @@ impl Plugin for GamePlugin {
             ControlPlugin,
             TextLoadingPlugin,
             DialogPlugin,
-            WorldInspectorPlugin::new()
+            StateStackPlugin,
+            WorldInspectorPlugin::new(),
         ))
-        .insert_resource(Msaa::Off)
         .add_systems(Startup, (
             setup_camera, 
             // setup_sprite,
@@ -172,43 +175,40 @@ fn setup_camera(mut commands: Commands, mut images: ResMut<Assets<Image>>) {
 
     // this camera renders whatever is on `PIXEL_PERFECT_LAYERS` to the canvas
     commands.spawn((
-        Camera2dBundle {
-            camera: Camera {
-                // render before the "main pass" camera
-                order: -2,
-                target: RenderTarget::Image(image_handle.clone()),
-                ..default()
-            },
+        Camera2d, 
+        Camera {
+            // render before the "main pass" camera
+            order: -2,
+            target: RenderTarget::Image(image_handle.clone()),
             ..default()
         },
+        Msaa::Off,
         InGameCamera,
         PIXEL_PERFECT_LAYERS,
     ));
 
     commands.spawn((
-        Camera2dBundle {
-            camera: Camera {
-                // render before the "main pass" camera
-                order: -1,
-                target: RenderTarget::Image(static_image_handle.clone()),
-                clear_color: ClearColorConfig::Custom(Color::NONE),
-                // clear_color: ClearColorConfig::None,
-                ..default()
-            },
-            transform: Transform::from_xyz(
-                RES_WIDTH as f32 / 2., 
-                RES_HEIGHT as f32 / 2., 
-                10.,
-            ),
+        Camera2d, 
+        Camera {
+            // render before the "main pass" camera
+            order: -1,
+            target: RenderTarget::Image(static_image_handle.clone()),
+            clear_color: ClearColorConfig::Custom(Color::NONE),
             ..default()
         },
+        Transform::from_xyz(
+            RES_WIDTH as f32 / 2., 
+            RES_HEIGHT as f32 / 2., 
+            10.,
+        ),
+        Msaa::Off,
         PIXEL_PERFECT_STATIC_LAYERS,
     ));
 
     // spawn the canvas
     commands.spawn((
-        SpriteBundle {
-            texture: image_handle,
+        Sprite {
+            image: image_handle,
             ..default()
         },
         Canvas,
@@ -217,18 +217,23 @@ fn setup_camera(mut commands: Commands, mut images: ResMut<Assets<Image>>) {
 
     // spawn the canvas
     commands.spawn((
-        SpriteBundle {
-            texture: static_image_handle,
-            transform: Transform::from_xyz(0., 0., 10.),
+        Sprite {
+            image: static_image_handle,
             ..default()
         },
+        Transform::from_xyz(0., 0., 10.),
         Canvas,
         HIGH_RES_LAYERS,
     ));
 
     // the "outer" camera renders whatever is on `HIGH_RES_LAYERS` to the screen.
     // here, the canvas and one of the sample sprites will be rendered by this camera
-    commands.spawn((Camera2dBundle::default(), OuterCamera, HIGH_RES_LAYERS));
+    commands.spawn((
+        Camera2d, 
+        Msaa::Off,
+        OuterCamera, 
+        HIGH_RES_LAYERS,
+    ));
 }
 
 fn camera_follow_player(
