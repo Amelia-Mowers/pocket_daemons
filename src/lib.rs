@@ -103,7 +103,7 @@ impl Plugin for GamePlugin {
         .add_systems(Update, (
             fit_canvas,
             // rotate,
-            camera_follow_player.run_if(in_state(GameState::Playing)),
+            camera_follow_player,
         ));
 
         #[cfg(debug_assertions)]

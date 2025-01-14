@@ -4,9 +4,13 @@ use bevy::utils::Duration;
 use crate::graph::grid_transform::*;
 use crate::player::*;
 
+use crate::GameState;
+
 use crate::map::*;
 
-#[derive(Component, Default)]
+
+#[derive(Component, Default, Reflect)]
+#[reflect(Component, Default)]
 #[require(
     Sprite,
     Transform,
@@ -16,8 +20,12 @@ use crate::map::*;
     MovementCooldown,
     AnimationIndex,
     AnimationTimer,
+    InitGridPosition,
 )]
 pub struct Mob;
+
+#[derive(Component, Default, Reflect)]
+pub struct InitGridPosition;
 
 #[derive(Component, Deref, DerefMut, Reflect, Debug, Default)]
 pub struct GridPosition(pub GridTransform);
@@ -35,14 +43,21 @@ impl Default for GridDirection {
 }
 
 #[derive(Component, Reflect, Debug)]
+#[reflect(Component, Default)]
+#[require(
+    Sprite,
+    GridDirection,
+    MovementCooldown,
+    AnimationTimer,
+)]
 pub struct AnimationIndex {
-    pub current: usize,
-    pub max: usize,
+    pub current: u16,
+    pub max: u16,
     pub move_only: bool,
 }
 
 impl AnimationIndex {
-    fn new(max: usize, move_only: bool) -> Self {
+    pub fn new(max: u16, move_only: bool) -> Self {
         AnimationIndex {
             current: 0,
             max: max,
@@ -65,6 +80,18 @@ impl Default for AnimationTimer {
         AnimationTimer(Timer::from_seconds(
             0.1, 
             TimerMode::Repeating
+        ))
+    }
+}
+
+#[derive(Component, Deref, DerefMut, Reflect, Debug)]
+pub struct SightTriggerCooldown(Timer);
+
+impl Default for SightTriggerCooldown {
+    fn default() -> Self {
+        SightTriggerCooldown(Timer::from_seconds(
+            2.0, 
+            TimerMode::Once,
         ))
     }
 }
@@ -101,14 +128,21 @@ impl Plugin for MobPlugin {
         app.add_systems(Update, (
             move_mob.after(player_move_control),
             mob_interact,
+            init_grid_from_transform,
         ))
+        .add_systems(Update, (
+            trigger_on_see_player,
+        ).run_if(in_state(GameState::Playing)))
         .add_event::<TriggerOnMoveOntoEvent>()
         .add_event::<MobMoveEvent>()
         .add_event::<MobInteractEvent>()
+        .register_type::<Mob>()
+        .register_type::<AnimationIndex>()
         .register_type::<GridDirection>()
         .register_type::<GridPosition>()
         .register_type::<LastGridPosition>()
         .register_type::<MovementCooldown>()
+        .register_type::<TriggerOnSeePlayer>()
         .register_type::<GridTransform>();
     }
 }
@@ -123,6 +157,22 @@ pub struct TriggerOnMoveOntoEvent {
 pub struct MobMoveEvent  {
     pub entity: Entity,
     pub movement: GridTransform,
+}
+
+fn init_grid_from_transform(
+    mut commands: Commands,    
+    mut query: Query<(
+        Entity,
+        &mut GridPosition,
+        &Transform,
+    ), (
+        With<InitGridPosition>,
+    )>,
+) { 
+    for (entity, mut grid_position, transform) in &mut query {
+        *grid_position = GridPosition((*transform).into());
+        commands.entity(entity).remove::<InitGridPosition>();
+    }
 }
 
 fn move_mob(
@@ -205,6 +255,69 @@ fn mob_interact(
                         triggered: *triggered_entity,
                     });
                 }
+            }
+        }
+    }
+}
+
+#[derive(Component, Default, Debug, Reflect)]
+#[reflect(Component, Default)]
+#[require(SightTriggerCooldown)]
+struct TriggerOnSeePlayer;
+
+#[derive(Component, Default, Debug, Reflect)]
+#[reflect(Component, Default)]
+struct BlocksSight;
+
+fn trigger_on_see_player(
+    time: Res<Time>,
+    mut trigger_query: Query<(
+        Entity, 
+        &GridPosition, 
+        &GridDirection,
+        &mut SightTriggerCooldown,
+    ), With<TriggerOnSeePlayer>>,
+    player_query: Query<Entity, With<Player>>,
+    blocks_sight_query: Query<(), With<BlocksSight>>,
+    grid_index: Res<GridIndex>,
+    mut trigger_events: EventWriter<TriggerEvent>,
+) {
+    for (triggered, grid_pos, grid_dir, mut cooldown) in &mut trigger_query {
+        (**cooldown).tick(time.delta());
+        if !cooldown.finished() {
+            break;
+        }
+        for step in 1..=16 {
+            let check_pos = **grid_pos + (**grid_dir).mult(step);
+            let occupants = grid_index.get(&GridPosition(check_pos));
+
+            // Check each occupant for blocking or a player
+            let mut blocked = false;
+            let mut found_player = false;
+
+            for &occupant in occupants {
+                // If this occupant blocks sight, stop scanning entirely.
+                if blocks_sight_query.contains(occupant) {
+                    blocked = true;
+                    break;
+                }
+
+                // If this occupant is a player, we send the event and stop.
+                if player_query.contains(occupant) {
+                    warn!("PLAYER DETECTED");
+                    cooldown.reset();
+                    trigger_events.send(TriggerEvent {
+                        triggering: occupant,
+                        triggered: triggered,
+                    });
+                    found_player = true;
+                    break;
+                }
+            }
+
+            // If vision is blocked or we've found a player, stop scanning further.
+            if blocked || found_player {
+                break;
             }
         }
     }

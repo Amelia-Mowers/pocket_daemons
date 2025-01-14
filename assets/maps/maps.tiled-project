@@ -7012,6 +7012,11 @@
             "id": 338,
             "members": [
                 {
+                    "name": "atlas_reference",
+                    "type": "string",
+                    "value": ""
+                },
+                {
                     "name": "reference",
                     "type": "string",
                     "value": ""
@@ -7076,6 +7081,57 @@
             "members": [
             ],
             "name": "pocket_daemons::map::HideThis",
+            "type": "class",
+            "useAs": [
+                "property"
+            ]
+        },
+        {
+            "color": "#ff000000",
+            "drawFill": true,
+            "id": 341,
+            "members": [
+                {
+                    "name": "current",
+                    "type": "int",
+                    "value": 0
+                },
+                {
+                    "name": "max",
+                    "type": "int",
+                    "value": 4
+                },
+                {
+                    "name": "move_only",
+                    "type": "bool",
+                    "value": true
+                }
+            ],
+            "name": "pocket_daemons::mob::AnimationIndex",
+            "type": "class",
+            "useAs": [
+                "property"
+            ]
+        },
+        {
+            "color": "#ff000000",
+            "drawFill": true,
+            "id": 342,
+            "members": [
+            ],
+            "name": "pocket_daemons::mob::Mob",
+            "type": "class",
+            "useAs": [
+                "property"
+            ]
+        },
+        {
+            "color": "#ff000000",
+            "drawFill": true,
+            "id": 343,
+            "members": [
+            ],
+            "name": "pocket_daemons::mob::TriggerOnSeePlayer",
             "type": "class",
             "useAs": [
                 "property"

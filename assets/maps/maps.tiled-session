@@ -24,8 +24,8 @@
             "scale": 3,
             "selectedLayer": 4,
             "viewCenter": {
-                "x": 228.66666666666666,
-                "y": 218.83333333333331
+                "x": 365.49999999999994,
+                "y": 263.16666666666663
             }
         },
         "areas/clearing_emb.tmx": {
@@ -158,7 +158,7 @@
         "areas/clearing.tmx"
     ],
     "project": "maps.tiled-project",
-    "property.type": "pocket_daemons::map::HideThis",
+    "property.type": "pocket_daemons::mob::TriggerOnSeePlayer",
     "recentFiles": [
         "tiles.tsx",
         "object-tiles.tsx",

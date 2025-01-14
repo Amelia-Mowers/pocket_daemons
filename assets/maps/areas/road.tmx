@@ -125,7 +125,30 @@
     <property name="trigger_on_interact" type="class" propertytype="pocket_daemons::map::TriggerOnInteract"/>
    </properties>
   </object>
-  <object id="22" gid="258" x="240" y="144" width="16" height="16"/>
+  <object id="22" gid="258" x="240" y="144" width="16" height="16">
+   <properties>
+    <property name="animation_index" type="class" propertytype="pocket_daemons::mob::AnimationIndex">
+     <properties>
+      <property name="max" type="int" value="6"/>
+      <property name="move_only" type="bool" value="false"/>
+     </properties>
+    </property>
+    <property name="blocks_walking" type="class" propertytype="pocket_daemons::map::BlocksWalking"/>
+    <property name="dialog_reference" type="class" propertytype="pocket_daemons::map::DialogReference">
+     <properties>
+      <property name="reference" value="dialog_test"/>
+     </properties>
+    </property>
+    <property name="init_sprite" type="class" propertytype="pocket_daemons::map::InitSprite">
+     <properties>
+      <property name="atlas_reference" value="mob_layout"/>
+      <property name="reference" value="mob"/>
+     </properties>
+    </property>
+    <property name="mob" type="class" propertytype="pocket_daemons::mob::Mob"/>
+    <property name="trigger_on_see_player" type="class" propertytype="pocket_daemons::mob::TriggerOnSeePlayer"/>
+   </properties>
+  </object>
   <object id="23" gid="259" x="192" y="80" width="16" height="16">
    <properties>
     <property name="exit_data" type="class" propertytype="pocket_daemons::map::ExitData">

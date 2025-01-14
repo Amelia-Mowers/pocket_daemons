@@ -116,6 +116,7 @@ pub struct DialogReference {
 #[reflect(Component, Default)]
 pub struct InitSprite {
     pub reference: String,
+    pub atlas_reference: String,
 }
 
 #[derive(Component, Default, Debug, Reflect)]
@@ -431,13 +432,16 @@ fn init_sprite(
     for (entity, init_sprite, mut transform) in &mut query {
         commands.entity(entity)
         .remove::<InitSprite>()
-        .insert(
+        .insert((
             Sprite {
                 image: textures.get_field::<Handle<Image>>(&init_sprite.reference).unwrap().clone(),   
+                texture_atlas: Some(
+                    textures.get_field::<Handle<TextureAtlasLayout>>(&init_sprite.atlas_reference).unwrap().clone().into()
+                ),
                 anchor: Anchor::Custom(Vec2::new(-0.5, -(14.0/16.0))),
-                ..Default::default()
+                ..default()
             },
-        );
+        ));
         *transform = Transform::from_translation(Vec3 {
              x: transform.translation.x, 
              y: transform.translation.y, 

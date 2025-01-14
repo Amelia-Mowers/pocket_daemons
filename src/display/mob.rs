@@ -24,7 +24,10 @@ fn update_mob_transform(
         &LastGridPosition,
         &MovementCooldown,
         &mut Transform,
-    ), With<Mob>>,
+    ), (
+        With<Mob>,
+        Without<InitGridPosition>,
+    )>,
 ) { 
     for (position, last, cooldown, mut transform) in &mut query {
         let current = (*transform).translation;
@@ -60,16 +63,20 @@ fn update_mob_animation(
         mut sprite,
     ) in &mut query {
 
-        let base = direction.cardinal_index() * (*index).max;
+        let max = (*index).max as usize;
+
+        let base = direction.cardinal_index() * max;
 
         timer.tick(time.delta());
         if timer.just_finished() {
             (*index).current = ((*index).current + 1) % (*index).max;
         }
 
+        let current = index.current as usize;
+
         if let Some(ref mut atlas) = &mut sprite.texture_atlas {
             if move_cool.just_finished() || !move_cool.finished() || !(*index).move_only {
-                atlas.index = base + index.current;
+                atlas.index = base + current;
             } else {
                 atlas.index = base + 1;
             }

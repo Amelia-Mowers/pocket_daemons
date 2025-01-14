@@ -87,6 +87,12 @@ impl GridTransform {
         Self::NORTH_WEST,
     ];
 
+    pub fn mult(&self, multiplier: i16) -> GridTransform {
+        GridTransform {
+            x: self.x * multiplier,
+            y: self.y * multiplier,
+        }
+    }
 }
 
 impl TryFrom<GridTransform> for TilePos {
