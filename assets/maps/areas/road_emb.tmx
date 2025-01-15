@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.0" orientation="orthogonal" renderorder="right-down" width="30" height="20" tilewidth="16" tileheight="16" infinite="0" nextlayerid="6" nextobjectid="17">
+<map version="1.10" tiledversion="1.11.0" orientation="orthogonal" renderorder="right-down" width="30" height="20" tilewidth="16" tileheight="16" infinite="0" nextlayerid="6" nextobjectid="27">
  <tileset firstgid="1" name="tiles" tilewidth="16" tileheight="16" tilecount="256" columns="16">
   <image source="../smooth-tiles.png" width="256" height="256"/>
   <wangsets>
@@ -11,7 +11,11 @@
  </tileset>
  <tileset firstgid="321" name="proto-tiles" tilewidth="16" tileheight="16" tilecount="16" columns="1">
   <image source="../proto-tiles.png" width="16" height="256"/>
-  <tile id="2" type="TreeTileBundle"/>
+  <tile id="2">
+   <properties>
+    <property name="blocks_walking" type="class" propertytype="pocket_daemons::map::BlocksWalking"/>
+   </properties>
+  </tile>
  </tileset>
  <layer id="1" name="base" width="30" height="20">
   <data encoding="csv">
@@ -22,7 +26,7 @@
 323,323,323,323,323,323,323,323,323,323,323,323,322,321,322,323,323,323,323,323,323,323,323,323,323,323,323,323,323,323,
 323,323,323,323,323,323,323,323,323,323,323,323,322,321,322,323,323,323,323,323,323,323,323,323,323,323,323,323,323,323,
 323,323,323,323,323,323,323,323,323,323,323,322,322,321,322,322,322,322,323,323,323,323,323,323,323,323,323,323,323,323,
-323,323,323,323,323,323,323,323,323,323,322,322,321,321,321,321,322,322,323,323,323,323,323,323,323,323,323,323,323,323,
+323,323,323,323,323,323,323,323,323,323,322,322,321,321,321,258,322,322,323,323,323,323,323,323,323,323,323,323,323,323,
 323,323,323,323,323,323,323,323,323,323,322,321,321,321,321,321,321,322,322,323,323,323,323,323,323,323,323,323,323,323,
 323,323,323,323,323,323,323,322,322,322,322,321,321,321,321,321,321,322,322,322,323,323,323,323,323,323,323,323,323,323,
 323,323,323,323,323,323,323,322,322,322,321,321,321,321,321,321,321,322,322,322,322,322,323,323,323,323,323,323,323,323,
@@ -110,71 +114,95 @@
 </data>
  </layer>
  <objectgroup id="3" name="objects">
-  <object id="2" type="MapExitBundle" gid="259" x="192" y="80" width="16" height="16">
+  <object id="20" gid="260" x="208" y="176" width="16" height="16">
    <properties>
-    <property name="ExitData" type="class" propertytype="ExitData">
+    <property name="hide_this" type="class" propertytype="pocket_daemons::map::HideThis"/>
+    <property name="spawn_data" type="class" propertytype="pocket_daemons::map::SpawnData">
      <properties>
-      <property name="Map" value="clearing"/>
-      <property name="Spawn" value="south"/>
-      <property name="To" value="areas/clearing"/>
+      <property name="from_direction" value="center"/>
+      <property name="name" value="start"/>
      </properties>
     </property>
    </properties>
   </object>
-  <object id="3" type="MapExitBundle" gid="259" x="208" y="80" width="16" height="16">
+  <object id="21" gid="261" x="192" y="128" width="16" height="16">
    <properties>
-    <property name="ExitData" type="class" propertytype="ExitData">
+    <property name="blocks_walking" type="class" propertytype="pocket_daemons::map::BlocksWalking"/>
+    <property name="dialog_reference" type="class" propertytype="pocket_daemons::map::DialogReference">
      <properties>
-      <property name="Map" value="clearing"/>
-      <property name="Spawn" value="south"/>
-      <property name="To" value="areas/clearing"/>
+      <property name="reference" value="dialog_test"/>
      </properties>
     </property>
+    <property name="trigger_on_interact" type="class" propertytype="pocket_daemons::map::TriggerOnInteract"/>
    </properties>
   </object>
-  <object id="4" type="MapExitBundle" gid="259" x="224" y="80" width="16" height="16">
+  <object id="22" gid="258" x="240" y="144" width="16" height="16">
    <properties>
-    <property name="ExitData" type="class" propertytype="ExitData">
+    <property name="animation_index" type="class" propertytype="pocket_daemons::mob::AnimationIndex">
      <properties>
-      <property name="Map" value="clearing"/>
-      <property name="Spawn" value="south"/>
-      <property name="To" value="areas/clearing"/>
+      <property name="max" type="int" value="6"/>
+      <property name="move_only" type="bool" value="false"/>
      </properties>
     </property>
+    <property name="blocks_walking" type="class" propertytype="pocket_daemons::map::BlocksWalking"/>
+    <property name="dialog_reference" type="class" propertytype="pocket_daemons::map::DialogReference">
+     <properties>
+      <property name="reference" value="dialog_test"/>
+     </properties>
+    </property>
+    <property name="init_sprite" type="class" propertytype="pocket_daemons::map::InitSprite">
+     <properties>
+      <property name="atlas_reference" value="mob_layout"/>
+      <property name="reference" value="mob"/>
+     </properties>
+    </property>
+    <property name="mob" type="class" propertytype="pocket_daemons::mob::Mob"/>
+    <property name="trigger_on_see_player" type="class" propertytype="pocket_daemons::mob::TriggerOnSeePlayer"/>
    </properties>
   </object>
-  <object id="12" type="PlayerSpawnBundle" gid="260" x="208" y="96" width="16" height="16">
+  <object id="23" gid="259" x="192" y="80" width="16" height="16">
    <properties>
-    <property name="SpawnData" type="class" propertytype="SpawnData">
+    <property name="exit_data" type="class" propertytype="pocket_daemons::map::ExitData">
      <properties>
-      <property name="From" value="areas/clearing"/>
-      <property name="FromDirection" value="north"/>
-      <property name="Name" value="north"/>
+      <property name="map" value="clearing"/>
+      <property name="spawn" value="south"/>
      </properties>
     </property>
+    <property name="hide_this" type="class" propertytype="pocket_daemons::map::HideThis"/>
+    <property name="trigger_on_move_onto" type="class" propertytype="pocket_daemons::map::TriggerOnMoveOnto"/>
    </properties>
   </object>
-  <object id="15" type="PlayerSpawnBundle" gid="260" x="208" y="176" width="16" height="16">
+  <object id="24" gid="259" x="208" y="80" width="16" height="16">
    <properties>
-    <property name="SpawnData" type="class" propertytype="SpawnData">
+    <property name="exit_data" type="class" propertytype="pocket_daemons::map::ExitData">
      <properties>
-      <property name="From" value="start"/>
-      <property name="FromDirection" value="center"/>
-      <property name="Name" value="start"/>
+      <property name="map" value="clearing"/>
+      <property name="spawn" value="south"/>
      </properties>
     </property>
+    <property name="hide_this" type="class" propertytype="pocket_daemons::map::HideThis"/>
+    <property name="trigger_on_move_onto" type="class" propertytype="pocket_daemons::map::TriggerOnMoveOnto"/>
    </properties>
   </object>
-  <object id="16" type="InteractDialogBundle" gid="261" x="192" y="128" width="16" height="16">
+  <object id="25" gid="259" x="224" y="80" width="16" height="16">
    <properties>
-    <property name="Dialog" type="class" propertytype="Dialog">
+    <property name="exit_data" type="class" propertytype="pocket_daemons::map::ExitData">
      <properties>
-      <property name="Reference" value="dialog_test"/>
+      <property name="map" value="clearing"/>
+      <property name="spawn" value="south"/>
      </properties>
     </property>
-    <property name="InitSprite" type="class" propertytype="InitSprite">
+    <property name="hide_this" type="class" propertytype="pocket_daemons::map::HideThis"/>
+    <property name="trigger_on_move_onto" type="class" propertytype="pocket_daemons::map::TriggerOnMoveOnto"/>
+   </properties>
+  </object>
+  <object id="26" gid="260" x="208" y="96" width="16" height="16">
+   <properties>
+    <property name="hide_this" type="class" propertytype="pocket_daemons::map::HideThis"/>
+    <property name="spawn_data" type="class" propertytype="pocket_daemons::map::SpawnData">
      <properties>
-      <property name="Reference" value="sign"/>
+      <property name="from_direction" value="north"/>
+      <property name="name" value="north"/>
      </properties>
     </property>
    </properties>

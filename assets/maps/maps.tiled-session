@@ -3,11 +3,11 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "tiles.tsx",
+    "activeFile": "areas/clearing.tmx",
     "automapping.whileDrawing": true,
     "expandedProjectPaths": [
-        "maps",
         "areas",
+        "maps",
         "."
     ],
     "fileStates": {
@@ -21,11 +21,11 @@
             "expandedObjectLayers": [
                 3
             ],
-            "scale": 2,
+            "scale": 3,
             "selectedLayer": 4,
             "viewCenter": {
-                "x": 271.5,
-                "y": 155.25
+                "x": 365.49999999999994,
+                "y": 263.16666666666663
             }
         },
         "areas/clearing_emb.tmx": {
@@ -55,8 +55,8 @@
             "scale": 3,
             "selectedLayer": 4,
             "viewCenter": {
-                "x": 243.49999999999997,
-                "y": 163.5
+                "x": 218.99999999999997,
+                "y": 149.5
             }
         },
         "areas/road_emb.tmx": {
@@ -119,8 +119,8 @@
             "scale": 4,
             "selectedLayer": 2,
             "viewCenter": {
-                "x": 164.25,
-                "y": 156.625
+                "x": 164,
+                "y": 156.375
             }
         },
         "rules_test_emb.tmx#object-tiles": {
@@ -128,6 +128,9 @@
         },
         "rules_test_emb.tmx#objects": {
             "dynamicWrapping": false,
+            "scaleInDock": 1
+        },
+        "rules_test_emb.tmx#proto-tiles": {
             "scaleInDock": 1
         },
         "rules_test_emb.tmx#tiles": {
@@ -142,6 +145,8 @@
     },
     "last.exportedFilePath": "/home/mia/Documents/pocket_daemons/assets/maps/areas",
     "last.imagePath": "/home/mia/Documents/pocket_daemons/assets/maps",
+    "last.objectTemplatePath": "/home/mia/Documents/pocket_daemons/assets/maps",
+    "last.objectTypesPath": "/home/mia/Documents/pocket_daemons/tiled_types_export.json",
     "map.lastUsedExportFilter": "All Files (*)",
     "map.lastUsedFormat": "tmx",
     "map.tileHeight": 16,
@@ -150,23 +155,21 @@
         "tiles.tsx",
         "object-tiles.tsx",
         "areas/road.tmx",
-        "areas/clearing.tmx",
-        "rules.tmx",
-        "areas/road_emb.tmx"
+        "areas/clearing.tmx"
     ],
     "project": "maps.tiled-project",
-    "property.type": "BlocksWalking",
+    "property.type": "pocket_daemons::mob::TriggerOnSeePlayer",
     "recentFiles": [
-        "areas/road_emb.tmx",
-        "rules.tmx",
-        "areas/clearing.tmx",
-        "areas/road.tmx",
-        "object-tiles.tsx",
         "tiles.tsx",
+        "object-tiles.tsx",
+        "areas/road.tmx",
+        "areas/clearing.tmx",
+        "rules_test_emb.tmx",
+        "proto-tiles.tsx",
+        "rules.tmx",
+        "areas/road_emb.tmx",
         "rules_test.tmx",
         "areas/clearing_emb.tmx",
-        "proto-tiles.tsx",
-        "rules_test_emb.tmx",
         "objects.tsx"
     ],
     "tileset.lastUsedFormat": "tsx",
