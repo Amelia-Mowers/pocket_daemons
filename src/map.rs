@@ -9,6 +9,7 @@ use crate::Srgba;
 
 use bevy_ecs_tilemap::prelude::*;
 use bevy_ecs_tiled::prelude::*;
+use bevy_ecs_tiled::TiledMapPluginConfig;
 
 use crate::graph::grid_transform::*;
 use crate::mob::Mob;
@@ -31,9 +32,6 @@ pub struct MapPlugin;
 impl Plugin for MapPlugin {
     fn build(&self, app: &mut App) {
         app
-        // .add_systems(OnEnter(GameState::Playing), (
-        //     init_map,
-        // ))
         .add_systems(Startup, (
             init_transition_effect,
         ))
@@ -49,7 +47,6 @@ impl Plugin for MapPlugin {
             update_map_changed.before(change_map),
         ).run_if(in_state(GameState::Playing)))
         .add_plugins(TilemapPlugin)
-        .add_plugins(TiledMapPlugin::default())
         .register_type::<CurrentMap>()
         .register_type::<CurrentSpawn>()
         .register_type::<SpawnData>()
@@ -70,6 +67,14 @@ impl Plugin for MapPlugin {
         .add_event::<PlayerSpawnEvent>()
         .add_event::<TriggerEvent>()
         .insert_resource(ClearColor(Color::srgb_u8(47, 76, 64)));
+
+        #[cfg(not(target_arch = "wasm32"))]
+        app.add_plugins(TiledMapPlugin::default());
+
+        #[cfg(target_arch = "wasm32")]
+        app.add_plugins(TiledMapPlugin(TiledMapPluginConfig {
+            tiled_types_export_file: None,
+        }));
     }
 }
 
